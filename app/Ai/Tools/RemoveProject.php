@@ -20,7 +20,7 @@ class RemoveProject implements Tool
     {
         $manager = App::make(AiProjectManager::class);
 
-        $projectId = (int) $request->get('project_id');
+        $projectId = (int) $request->string('project_id');
         $result = $manager->removeProject($projectId);
 
         return json_encode($result);

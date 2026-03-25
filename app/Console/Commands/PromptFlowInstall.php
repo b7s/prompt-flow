@@ -19,6 +19,7 @@ class PromptFlowInstall extends Command
         $this->runComposerInstall();
         $this->setupSupervisor();
         $this->setupGlobalCli();
+        $this->activateTelegram();
 
         return self::SUCCESS;
     }
@@ -71,6 +72,20 @@ class PromptFlowInstall extends Command
         $this->newLine();
         $this->line('<fg=yellow>After setup, you can run:</>');
         $this->line('  pf link  # Link current folder as a project');
+    }
+
+    private function activateTelegram(): void
+    {
+        $this->newLine();
+        $this->info('Activating Telegram bot...');
+
+        $result = $this->callSilent('telegram:activate');
+
+        if ($result === self::SUCCESS) {
+            $this->info('Telegram bot activated.');
+        } else {
+            $this->warn('Telegram activation skipped. Run `php artisan telegram:activate` manually.');
+        }
     }
 
     private function checkRequirements(): void
@@ -282,7 +297,7 @@ INI;
 
         if ($configDir === null) {
             $fallbackDir = storage_path('framework/supervisor');
-            if (!is_dir($fallbackDir) && !mkdir($fallbackDir, 0755, true) && !is_dir($fallbackDir)) {
+            if (! is_dir($fallbackDir) && ! mkdir($fallbackDir, 0755, true) && ! is_dir($fallbackDir)) {
                 throw new \RuntimeException(sprintf('Directory "%s" was not created', $fallbackDir));
             }
             $configDir = $fallbackDir;
@@ -345,7 +360,7 @@ INI;
         if (! is_writable($configDir)) {
             $tempDir = storage_path('framework/supervisor');
 
-            if (!is_dir($tempDir) && !mkdir($tempDir, 0755, true) && !is_dir($tempDir)) {
+            if (! is_dir($tempDir) && ! mkdir($tempDir, 0755, true) && ! is_dir($tempDir)) {
                 throw new \RuntimeException(sprintf('Directory "%s" was not created', $tempDir));
             }
 
@@ -368,7 +383,7 @@ INI;
     private function createDirectory(string $path): bool
     {
         try {
-            if (!is_dir($path) && !mkdir($path, 0755, true) && !is_dir($path)) {
+            if (! is_dir($path) && ! mkdir($path, 0755, true) && ! is_dir($path)) {
                 throw new \RuntimeException(sprintf('Directory "%s" was not created', $path));
             }
 

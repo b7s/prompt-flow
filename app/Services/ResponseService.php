@@ -5,12 +5,31 @@ namespace App\Services;
 use App\Enums\ChannelType;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Telegram\Bot\Laravel\Facades\Telegram;
 
 class ResponseService
 {
+    private array $executingMessages = [];
+
+    public function __construct()
+    {
+        $this->executingMessages = trans('messages.executing');
+    }
+
     public function sendProcessingMessage(ChannelType $channel, mixed $chatId): void
     {
         $message = trans('messages.processing');
+
+        match ($channel) {
+            ChannelType::Telegram => $this->sendTelegramMessage($chatId, $message),
+            ChannelType::WhatsApp => $this->sendWhatsAppMessage($chatId, $message),
+            ChannelType::Web => null,
+        };
+    }
+
+    public function sendExecutingMessage(ChannelType $channel, mixed $chatId): void
+    {
+        $message = $this->executingMessages[array_rand($this->executingMessages)];
 
         match ($channel) {
             ChannelType::Telegram => $this->sendTelegramMessage($chatId, $message),
@@ -41,19 +60,10 @@ class ResponseService
 
     protected function sendTelegramMessage(int|string $chatId, string $message): void
     {
-        $botToken = config('prompt-flow.channels.telegram.bot_token');
-
-        if (empty($botToken)) {
-            Log::warning('Telegram bot token not configured');
-
-            return;
-        }
-
         try {
-            Http::post("https://api.telegram.org/bot{$botToken}/sendMessage", [
+            Telegram::sendMessage([
                 'chat_id' => $chatId,
                 'text' => $message,
-                'parse_mode' => 'Markdown',
             ]);
         } catch (\Exception $e) {
             Log::error('Failed to send Telegram message', [

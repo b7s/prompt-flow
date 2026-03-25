@@ -38,22 +38,20 @@ enum CliType: string
 
     public function buildCommand(string $prompt, string $projectPath): array
     {
-        $escapedPrompt = $prompt;
-
         return match ($this) {
             self::OpenCode => [
                 'opencode',
                 'run',
                 '--format', 'json',
                 '--dir', $projectPath,
-                $escapedPrompt,
+                $prompt,
             ],
             self::ClaudeCode => [
                 'claude',
                 '-p',
                 '--output-format', 'json',
                 '--cwd', $projectPath,
-                $escapedPrompt,
+                $prompt,
             ],
         };
     }

@@ -20,13 +20,13 @@ class EditProject implements Tool
     {
         $manager = App::make(AiProjectManager::class);
 
-        $projectId = (int) $request->get('project_id');
+        $projectId = (int) $request->string('project_id');
         $data = [
-            'name' => $request->get('name'),
-            'description' => $request->get('description'),
-            'path' => $request->get('path'),
-            'status' => $request->get('status'),
-            'cli_preference' => $request->get('cli_preference'),
+            'name' => $request->string('name'),
+            'description' => $request->string('description'),
+            'path' => $request->string('path'),
+            'status' => $request->string('status'),
+            'cli_preference' => $request->string('cli_preference'),
         ];
 
         $data = array_filter($data, fn ($value) => $value !== null);

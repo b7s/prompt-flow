@@ -3,6 +3,8 @@
 return [
     'name' => 'Prompt Flow',
 
+    'external_url' => env('APP_EXTERNAL_URL', env('APP_URL')),
+
     'default_cli' => env('DEFAULT_CLI', 'opencode'),
 
     'ai' => [

@@ -25,7 +25,7 @@ $startDir = getcwd() ?: '.';
 $promptFlowPath = getenv('PROMPT_FLOW_PATH');
 
 if (! $promptFlowPath) {
-    $dir = $startDir;
+    $dir = __DIR__ . '/../../..';
     while (true) {
         if (file_exists($dir . '/config/prompt-flow.php') && file_exists($dir . '/artisan')) {
             $promptFlowPath = $dir;
@@ -58,7 +58,7 @@ if (! $promptFlowPath || ! file_exists($promptFlowPath . '/artisan')) {
     echo "Error: PromptFlow Laravel app not found.\n";
     echo "\n";
     echo "To fix this, set the PROMPT_FLOW_PATH environment variable:\n";
-    echo "  export PROMPT_FLOW_PATH=/path/to/your/ai-project\n";
+    echo "  export PROMPT_FLOW_PATH=/path/to/your/prompt-flow\n";
     echo "\n";
     echo "Or run this command from within your PromptFlow Laravel app folder.\n";
     exit(1);

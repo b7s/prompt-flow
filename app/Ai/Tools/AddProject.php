@@ -21,10 +21,10 @@ class AddProject implements Tool
         $manager = App::make(AiProjectManager::class);
 
         $data = [
-            'name' => $request->get('name'),
-            'path' => $request->get('path'),
-            'description' => $request->get('description'),
-            'cli_preference' => $request->get('cli_preference'),
+            'name' => $request->string('name'),
+            'path' => $request->string('path'),
+            'description' => $request->string('description'),
+            'cli_preference' => $request->string('cli_preference'),
         ];
 
         $result = $manager->addProject($data);

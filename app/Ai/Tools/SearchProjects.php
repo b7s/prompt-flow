@@ -20,7 +20,7 @@ class SearchProjects implements Tool
     {
         $manager = App::make(AiProjectManager::class);
 
-        $query = $request->get('query');
+        $query = $request->string('query');
         $result = $manager->searchProjects($query);
 
         return json_encode($result);

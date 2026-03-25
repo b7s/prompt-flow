@@ -16,14 +16,7 @@ Automatically identifies which project you're referring to by analyzing your mes
 ### 📱 Multi-Channel Webhooks
 Receive requests from multiple sources:
 - **Telegram Bot** — Send commands directly to your Telegram bot
-- **WhatsApp** — Integrate with WhatsApp Business API
 - **Web API** — RESTful endpoint for custom integrations
-
-### 🔐 Secure API Key Authentication
-Bearer token validation ensures only authorized users can access your webhook endpoints.
-
-### ⚡ Asynchronous Processing
-All requests are queued and processed asynchronously, ensuring your bot responds instantly while heavy CLI operations run in the background.
 
 ### 🖥️ Interactive CLI Manager
 Beautiful terminal interface using Laravel Prompts for:
@@ -42,19 +35,17 @@ Automatically selects between **OpenCode** or **Claude Code** based on:
 
 ## Installation
 
-### 1. Clone and Install
+### 1. Clone
 
 ```bash
 git clone https://github.com/b7s/prompt-flow.git && cd prompt-flow
 ```
 
-```bash
-php artisan install
-```
-
 ### 2. Configure Environment Variables
 
 ```env
+APP_EXTERNAL_URL=https://your-external-app-url.com # From ngrok, cloudflare tunnel, vps, etc.
+
 # Default CLI (opencode or claudecode)
 DEFAULT_CLI=opencode
 
@@ -70,39 +61,20 @@ TELEGRAM_ENABLED=true
 WHATSAPP_API_KEY=your-whatsapp-api-key
 WHATSAPP_ENABLED=true
 ```
-
 > Use the `opencode models` command (or `claude models` for Claude Code) to see available models and providers.
 
-**Done!** (If you just want to use it, but wish to customize it, follow the steps below.)
-
----
-
-### 3. Environment Configuration
-
-Copy `.env.example` to `.env`:
+### 3. Install
 
 ```bash
-cp .env.example .env
+php artisan install
 ```
 
-### 4. Run Migrations
+> This will automatically detect your operating system, install the necessary dependencies and configure Telegram Bot (if .env is correct).
+
+### 4. Start server:
 
 ```bash
-php artisan migrate
-```
-
-### 5. Start the Queue Worker (Development)
-
-For local development:
-
-```bash
-php artisan queue:work
-```
-
-Or use the built-in development script:
-
-```bash
-composer run dev
+php artisan serve
 ```
 
 ---
@@ -139,23 +111,35 @@ REDIS_HOST=127.0.0.1
 
 ## Expose your application externally
 
-### If you want to quickly show your application to use on Telegram/Whatsapp, use:
+### If you want to quickly show your application to use on Telegram/API
+
+#### To run Local, you need to run your app:
+
+```bash
+php artisan serve
+```
+Copy the IP address and port and use it in one of the following services above.
+
+### Access out of your local machine:
 
 * [Cloudflare Tunnel](https://developers.cloudflare.com/tunnel/setup/) (better and free)
-* [Ngrok](https://ngrok.com/) (simpler)
+* [Ngrok](https://ngrok.com/)
+* [Tailscale](http://tailscale.com/)
 
 If you want to put it into production, go with:
 
 * [Railway](https://railway.com/) / [Render](https://render.com/) for something simpler. 
-* VPS + Nginx + Laravel (buy some service)
+* VPS + Nginx + Laravel (DigitalOcean, Hetzner, etc)
 
 ### Telegram Bot
 
 1) Create a bot: https://core.telegram.org/bots/tutorial#obtain-your-bot-token
-2) Configure the bot to send messages to your webhook: `/api/webhook/telegram`
+2) Configure the bot to send messages to your webhook:
+   * Add the Token from Telegram `@BotFather` to your `.env` file
+   * Register your app webhook url:
+     * `php artisan telegram:activate` Direct call
+     * `php artisan install` Also activates telegram (won't stop on failure)
 3) Talk to your bot
-
-
 
 ---
 
@@ -185,9 +169,31 @@ pf projects
 - 🔍 **Search Projects** — Find projects by name or path
 - 🔑 **Manage API Keys** — Generate and manage API keys
 
-### Quick Project Linking (Valet-style)
+### Global CLI (pf)
 
-Link a project from any folder, similar to Laravel Valet's `valet link`:
+After running `php artisan install`, you can use the `pf` command from any folder. It automatically finds your PromptFlow Laravel app by searching parent directories.
+
+```bash
+# Link current folder as a project
+pf link
+
+# Unlink current folder from PromptFlow
+pf unlink            # Prompts for confirmation
+pf unlink --force    # Skips confirmation
+
+# Open interactive manager
+pf projects
+```
+
+If the global command is not available, create a symlink:
+
+```bash
+sudo ln -s /path/to/your-prompt-flow-project/bin/pf /usr/local/bin/pf
+```
+
+### Quick Project Linking
+
+Link a project from any folder:
 
 Use the global `pf` command from any directory:
 
@@ -231,37 +237,9 @@ pf link --name="my-project" --description="..." --cli=claudecode
 Unlink (remove) a project from PromptFlow:
 
 ```bash
-pf unlink
-```
-
-Or use the global `pf` command:
-
-```bash
 cd /path/to/my-project
 pf unlink              # Prompts for confirmation
 pf unlink --force      # Skips confirmation
-```
-
-### Global CLI (pf)
-
-After running `php artisan install`, you can use the `pf` command from any folder. It automatically finds your PromptFlow Laravel app by searching parent directories.
-
-```bash
-# Link current folder as a project
-pf link
-
-# Unlink current folder from PromptFlow
-pf unlink            # Prompts for confirmation
-pf unlink --force    # Skips confirmation
-
-# Open interactive manager
-pf projects
-```
-
-If the global command is not available, create a symlink:
-
-```bash
-sudo ln -s /path/to/your-prompt-flow-project/bin/pf /usr/local/bin/pf
 ```
 
 ### API Endpoints
@@ -338,14 +316,6 @@ All business logic is encapsulated in services:
 - **AiContextService** — AI context analysis
 - **CliExecutorService** — CLI command execution
 - **ResponseService** — Bot response handling
-
-### Enum-Driven Validation
-All validation rules use enums, ensuring type safety:
-
-```php
-// Never hardcode what's dynamic
-'channel' => ['in:' . implode(',', ChannelType::values())]
-```
 
 ### Queue-Based Processing
 Webhook jobs are dispatched to the queue, allowing:

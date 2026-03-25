@@ -3,9 +3,8 @@
 namespace App\Jobs;
 
 use App\Enums\ChannelType;
-use App\Enums\CliType;
 use App\Services\AiContextService;
-use App\Services\CliExecutorService;
+use App\Services\ProjectActionService;
 use App\Services\ResponseService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -27,50 +26,38 @@ class ProcessWebhookJob implements ShouldQueue
 
     public function handle(
         AiContextService $aiContextService,
-        CliExecutorService $cliExecutorService,
+        ProjectActionService $projectActionService,
         ResponseService $responseService,
     ): void {
         $responseService->sendProcessingMessage($this->channel, $this->chatId);
 
         try {
-            $aiResult = $aiContextService->analyze($this->message);
+            $aiResult = $aiContextService->analyze($this->message, $this->channel, $this->chatId);
 
-            if ($aiResult['confidence'] < 0.5) {
-                $responseService->sendError(
+            if ($aiResult['action'] === 'ai_response') {
+                $responseService->sendResult(
                     $this->channel,
                     $this->chatId,
-                    trans('messages.project.not_found')
+                    $aiResult['message']
                 );
 
                 return;
             }
 
-            $cliType = CliType::fromPreference(
-                $aiResult['cli_type'],
-                config('prompt-flow.default_cli')
-            );
-
-            $result = $cliExecutorService->execute(
-                $cliType,
-                $aiResult['refined_prompt'],
-                $aiResult['project_path']
-            );
+            $defaultCli = config('prompt-flow.default_cli', 'opencode');
+            $result = $projectActionService->execute($aiResult, $defaultCli);
 
             if ($result['success']) {
-                $output = is_string($result['output'])
-                    ? $result['output']
-                    : json_encode($result['output']);
-
                 $responseService->sendResult(
                     $this->channel,
                     $this->chatId,
-                    trans('messages.cli.success')."\n\n".$output
+                    $result['message']
                 );
             } else {
                 $responseService->sendError(
                     $this->channel,
                     $this->chatId,
-                    trans('messages.cli.error', ['error' => $result['error']])
+                    $result['message']
                 );
             }
         } catch (Throwable $e) {

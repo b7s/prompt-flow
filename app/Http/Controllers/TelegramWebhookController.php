@@ -3,18 +3,33 @@
 namespace App\Http\Controllers;
 
 use App\Enums\ChannelType;
-use App\Http\Requests\TelegramWebhookRequest;
 use App\Jobs\ProcessWebhookJob;
 use Illuminate\Http\JsonResponse;
+use Telegram\Bot\Laravel\Facades\Telegram;
 
 class TelegramWebhookController
 {
-    public function __invoke(TelegramWebhookRequest $request): JsonResponse
+    public function __invoke(): JsonResponse
     {
+        $update = Telegram::getWebhookUpdate();
+
+        $message = $update->getMessage();
+
+        if ($message === null) {
+            return response()->json([
+                'status' => 'ignored',
+                'message' => 'No message in update',
+            ], 200);
+        }
+
+        $chatId = $message->getChat()->getId();
+        $text = $message->getText();
+
         ProcessWebhookJob::dispatch(
+            message: $text,
             channel: ChannelType::Telegram,
-            chatId: $request->input('chat.id'),
-            message: $request->input('text'),
+            chatId: $chatId,
+            apiKey: null,
         );
 
         return response()->json([

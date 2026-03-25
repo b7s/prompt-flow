@@ -10,6 +10,10 @@ class ValidateApiKey
 {
     public function handle(Request $request, Closure $next)
     {
+        if ($this->shouldSkipValidation($request)) {
+            return $next($request);
+        }
+
         $token = $this->extractToken($request);
 
         if ($token === null) {
@@ -38,5 +42,15 @@ class ValidateApiKey
         }
 
         return substr($header, 7);
+    }
+
+    protected function shouldSkipValidation(Request $request): bool
+    {
+        $routeName = $request->route()?->getName();
+
+        return in_array($routeName, [
+            'telegram.webhook',
+            'whatsapp.webhook',
+        ]);
     }
 }

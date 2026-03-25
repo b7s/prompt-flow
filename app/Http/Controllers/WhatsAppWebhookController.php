@@ -23,9 +23,10 @@ class WhatsAppWebhookController
         }
 
         ProcessWebhookJob::dispatch(
+            message: $message,
             channel: ChannelType::WhatsApp,
             chatId: $chatId,
-            message: $message,
+            apiKey: null,
         );
 
         return response()->json([
