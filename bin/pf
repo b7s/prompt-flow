@@ -1,0 +1,130 @@
+#!/usr/bin/env php
+<?php
+
+/**
+ * Prompt Flow CLI
+ *
+ * Usage: pf <command> [options]
+ *
+ * Commands:
+ *   link      Link current folder as a PromptFlow project
+ *   install   Install PromptFlow worker (Supervisor/Task Scheduler)
+ *   manager   Open interactive project manager
+ *
+ * Configuration:
+ *   Set PROMPT_FLOW_PATH env var to your PromptFlow Laravel app path.
+ *   Example: export PROMPT_FLOW_PATH=/home/bruno/Documents/projects/b7s/ai-project
+ */
+
+use Illuminate\Contracts\Console\Kernel;
+use Illuminate\Support\Facades\Artisan;
+use function Laravel\Prompts\table;
+
+$startDir = getcwd() ?: '.';
+
+$promptFlowPath = getenv('PROMPT_FLOW_PATH');
+
+if (! $promptFlowPath) {
+    $dir = $startDir;
+    while (true) {
+        if (file_exists($dir . '/config/prompt-flow.php') && file_exists($dir . '/artisan')) {
+            $promptFlowPath = $dir;
+            break;
+        }
+
+        $parentDir = dirname($dir);
+        if ($parentDir !== $dir && is_dir($parentDir)) {
+            $items = scandir($parentDir);
+            foreach ($items as $item) {
+                if ($item === '.' || $item === '..') {
+                    continue;
+                }
+                $candidatePath = $parentDir . '/' . $item;
+                if ($item !== basename($dir) && is_dir($candidatePath) && file_exists($candidatePath . '/config/prompt-flow.php')) {
+                    $promptFlowPath = $candidatePath;
+                    break 2;
+                }
+            }
+        }
+
+        if ($dir === '/' || $dir === $parentDir) {
+            break;
+        }
+        $dir = $parentDir;
+    }
+}
+
+if (! $promptFlowPath || ! file_exists($promptFlowPath . '/artisan')) {
+    echo "Error: PromptFlow Laravel app not found.\n";
+    echo "\n";
+    echo "To fix this, set the PROMPT_FLOW_PATH environment variable:\n";
+    echo "  export PROMPT_FLOW_PATH=/path/to/your/ai-project\n";
+    echo "\n";
+    echo "Or run this command from within your PromptFlow Laravel app folder.\n";
+    exit(1);
+}
+
+$autoloadPath = $promptFlowPath . '/vendor/autoload.php';
+
+if (! file_exists($autoloadPath)) {
+    echo "Error: vendor/autoload.php not found at: {$autoloadPath}\n";
+    echo "Please run 'composer install' in your PromptFlow app first.\n";
+    exit(1);
+}
+
+require $autoloadPath;
+
+$app = require $promptFlowPath . '/bootstrap/app.php';
+$app->make(Kernel::class)->bootstrap();
+
+$arguments = $argv;
+array_shift($arguments);
+
+$commandString = trim(implode(' ', $arguments));
+$firstArg = $arguments[0] ?? '';
+
+$commandMap = [
+    'link' => [
+        'command' => 'promptflow:link',
+        'description' => 'Link current folder as a PromptFlow project'
+    ],
+    'unlink' => [
+        'command' => 'promptflow:unlink',
+        'description' => 'Unlink current folder from PromptFlow'
+    ],
+    'projects' => [
+        'command' => 'projects',
+        'description' => 'Manage PromptFlow projects'
+    ],
+    'install' => [
+        'command' => 'install',
+        'description' => 'Install PromptFlow worker (Supervisor/Task Scheduler)'
+    ],
+];
+
+if (in_array($firstArg, ['-h', '--help', '-V', '--version'])) {
+    echo "Usage: pf <command> [options]\n";
+    table(
+        ['Command', 'Description'],
+        array_map(static fn ($command) => [$command, $commandMap[$command]['description']], array_keys($commandMap))
+    );
+    exit(1);
+}
+
+if ($firstArg === '' || $firstArg === null) {
+    $commandString = 'projects';
+} else if (isset($commandMap[$firstArg])) {
+    $extraArgs = '';
+    if ($commandString !== $firstArg) {
+        $extraArgs = ' ' . substr($commandString, strlen($firstArg) + 1);
+    }
+    $commandString = $commandMap[$firstArg]['command'] . $extraArgs;
+}
+
+header('Content-Type: text/plain');
+
+passthru($promptFlowPath . '/artisan ' . $commandString, $exitCode);
+
+echo Artisan::output();
+
+exit($exitCode);
