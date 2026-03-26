@@ -22,4 +22,12 @@ return [
             'enabled' => env('WHATSAPP_ENABLED', false),
         ],
     ],
+
+    'linear' => [
+        'api_key' => env('LINEAR_API_KEY'),
+        'organization_id' => env('LINEAR_ORGANIZATION_ID'),
+        'webhook_secret' => env('LINEAR_WEBHOOK_SECRET'),
+        'telegram_chat_id' => env('LINEAR_TELEGRAM_CHAT_ID'),
+        'enabled' => env('LINEAR_ENABLED', false),
+    ],
 ];

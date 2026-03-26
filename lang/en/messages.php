@@ -43,6 +43,26 @@ return [
         'whatsapp' => 'WhatsApp',
     ],
 
+    'linear' => [
+        'status' => [
+            'backlog' => 'Backlog',
+            'todo' => 'To Do',
+            'in_progress' => 'In Progress',
+            'in_review' => 'In Review',
+            'done' => 'Done',
+            'canceled' => 'Canceled',
+        ],
+        'webhook' => [
+            'received' => '📋 Linear issue received: :title',
+            'completed' => '✅ Issue resolved: :title',
+            'error' => '❌ Failed to process Linear issue: :error',
+        ],
+        'issue' => [
+            'title' => 'Issue',
+            'description' => 'Description',
+        ],
+    ],
+
     'validation' => [
         'path_exists' => "A project named ':name' already exists at this path.",
     ],

@@ -42,13 +42,15 @@ enum CliType: string
             self::OpenCode => [
                 'opencode',
                 'run',
+                $prompt,
+                '--model', config('prompt-flow.ai.provider').'/'.config('prompt-flow.ai.model'),
                 '--format', 'json',
                 '--dir', $projectPath,
-                $prompt,
             ],
             self::ClaudeCode => [
                 'claude',
                 '-p',
+                '--model', config('prompt-flow.ai.model'),
                 '--output-format', 'json',
                 '--cwd', $projectPath,
                 $prompt,

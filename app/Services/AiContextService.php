@@ -48,7 +48,7 @@ readonly class AiContextService
             $contextMessage .= "User message: {$userMessage}\n\n";
             $contextMessage .= "Registered projects:\n";
             $contextMessage .= collect($projectsData)
-                ->map(static fn ($p) => "- Name: {$p['name']}, Path: {$p['path']}, Status: {$p['status']}")
+                ->map(static fn ($p) => "- Name: {$p['name']}, Path: {$p['path']}, Status: {$p['status']}, ID: {$p['id']}")
                 ->join("\n");
             $contextMessage .= "\n\nUse execute_prompt tool with project_name or project_path to run commands on a project.";
             $contextMessage .= "\n\nDon't format as markdown. Format only as plain text with: newlines, paragraphs, and bullet points. Use emojis where appropriate.";

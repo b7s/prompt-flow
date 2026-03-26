@@ -16,7 +16,9 @@ Automatically identifies which project you're referring to by analyzing your mes
 ### 📱 Multi-Channel Webhooks
 Receive requests from multiple sources:
 - **Telegram Bot** — Send commands directly to your Telegram bot
+- **WhatsApp** — Receive commands via WhatsApp Business API
 - **Web API** — RESTful endpoint for custom integrations
+- **Linear** — AI-powered issue processing via webhooks
 
 ### 🖥️ Interactive CLI Manager
 Beautiful terminal interface using Laravel Prompts for:
@@ -62,6 +64,13 @@ TELEGRAM_ENABLED=true
 # WhatsApp (optional)
 WHATSAPP_API_KEY=your-whatsapp-api-key
 WHATSAPP_ENABLED=true
+
+# Linear (optional)
+LINEAR_API_KEY=your-linear-api-key
+LINEAR_ORGANIZATION_ID=your-organization-id
+LINEAR_WEBHOOK_SECRET=your-webhook-secret
+LINEAR_TELEGRAM_CHAT_ID=your-telegram-chat-id
+LINEAR_ENABLED=true
 ```
 > Use the `opencode models` command (or `claude models` for Claude Code) to see available models and providers.
 
@@ -144,7 +153,7 @@ pf projects
 - ✏️ **Edit Project** — Update project details
 - 🗑️ **Remove Project** — Delete a project
 - 🔍 **Search Projects** — Find projects by name or path
-- 🔑 **Manage API Keys** — Generate and manage API keys
+- 🔑 **Manage API Keys** — Generate and manage Bearer API keys for use in web requests
 
 ### Global CLI (pf)
 
@@ -228,6 +237,7 @@ All endpoints require Bearer token authentication:
 | `/api/webhook` | POST | Main webhook endpoint |
 | `/api/webhook/telegram` | POST | Telegram-specific webhook |
 | `/api/webhook/whatsapp` | POST | WhatsApp-specific webhook |
+| `/api/webhook/linear` | POST | Linear issue webhook |
 
 **Request Format:**
 
@@ -250,6 +260,28 @@ The system will:
 2. 🧠 Analyze which project you're referring to
 3. ⚡ Execute the task using the configured CLI
 4. 📤 Send the result back to your bot
+
+### Linear Integration
+
+Automate your Linear workflow with AI-powered issue processing:
+
+1. **Create a Linear API key**: Go to Settings > API > Create a personal API key
+2. **Get your Organization ID**: Find it in the URL (e.g., `linear.app/team/your-org-id/...`)
+3. **Configure your `.env`** with the Linear variables (see above)
+4. **Create a webhook**: In Linear Settings > API > Webhooks, add your endpoint:
+   - URL: `https://your-app.com/api/webhook/linear`
+   - Events: Issues (create, update)
+5. **Set up Telegram notifications** (optional): Configure `LINEAR_TELEGRAM_CHAT_ID` to receive notifications
+
+**What happens:**
+- When a new issue is created/updated in Linear, the system receives the webhook
+- AI analyzes the issue title and description to determine what action to take
+- The AI executes the task on the linked project using the configured CLI
+- On completion, the system:
+  - Updates the issue status to "Done"
+  - Adds a comment with the result
+  - Adds a ✅ reaction
+  - Sends a Telegram notification (if configured)
 
 ---
 

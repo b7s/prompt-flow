@@ -51,6 +51,7 @@ class ValidateApiKey
         return in_array($routeName, [
             'telegram.webhook',
             'whatsapp.webhook',
+            'linear.webhook',
         ]);
     }
 }
