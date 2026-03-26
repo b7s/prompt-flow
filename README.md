@@ -37,28 +37,7 @@ git clone https://github.com/b7s/prompt-flow.git && cd prompt-flow
 
 ### 2. Configure Environment Variables
 
-Add or configure the following variables to your `.env` file:
-
-| Variable | Description | Required | Example |
-|----------|-------------|----------|---------|
-| `APP_EXTERNAL_URL` | Public URL for webhooks (ngrok, cloudflare tunnel, VPS) | Yes | `https://your-external-app-url.com` |
-| `DEFAULT_CLI` | Default CLI tool to use | No | `opencode` or `claudecode` |
-| `AI_FLOW_PROVIDER` | AI provider | No | `anthropic`, `openai`, `ollama` |
-| `AI_FLOW_MODEL` | AI model to use | No | `claude-sonnet-4-6` |
-| `TELEGRAM_BOT_TOKEN` | Telegram bot token from @BotFather | No | `123456789:ABC-DEF...` |
-| `TELEGRAM_CHAT_ID` | Telegram chat ID or channel username | No | `@yourBotUsername` |
-| `TELEGRAM_ENABLED` | Enable Telegram integration | No | `true` |
-| `WHATSAPP_API_KEY` | WhatsApp Business API key | No | `your-whatsapp-api-key` |
-| `WHATSAPP_ENABLED` | Enable WhatsApp integration | No | `true` |
-| `WEB_ENABLED` | Enable Web API | No | `true` |
-| `LINEAR_TRIGGER_STATUS` | Linear status that triggers AI processing | No | `backlog` |
-| `LINEAR_MOVE_TO_WHEN_FINISH` | Status to move issue when task completes | No | `done` |
-| `LINEAR_API_KEY` | Linear API key | No | `lin_api_...` |
-| `LINEAR_ORGANIZATION_ID` | Linear organization ID | No | `your-organization-id` |
-| `LINEAR_WEBHOOK_SECRET` | Linear webhook secret for verification | No | `your-webhook-secret` |
-| `LINEAR_ENABLED` | Enable Linear integration | No | `true` |
-
-> **Note:** `APP_EXTERNAL_URL` is required for Telegram, Linear, and WhatsApp webhooks to work.
+Copy `.env.example` to `.env` and configure the key variables. For a complete reference, see [Environment Variables Reference](#environment-variables-reference).
 
 ### 3. Install
 
@@ -318,6 +297,29 @@ The system automatically continues in the same CLI session when possible, mainta
 ---
 
 ## Configuration
+
+### Environment Variables Reference
+
+| Variable | Description | Required | Example |
+|----------|-------------|----------|---------|
+| `APP_EXTERNAL_URL` | Public URL for webhooks (ngrok, cloudflare tunnel, VPS) | Yes | `https://your-external-app-url.com` |
+| `DEFAULT_CLI` | Default CLI tool to use | No | `opencode` or `claudecode` |
+| `AI_FLOW_PROVIDER` | AI provider | No | `anthropic`, `openai`, `ollama` |
+| `AI_FLOW_MODEL` | AI model to use | No | `claude-sonnet-4-6` |
+| `TELEGRAM_BOT_TOKEN` | Telegram bot token from @BotFather | No | `123456789:ABC-DEF...` |
+| `TELEGRAM_CHAT_ID` | Telegram chat ID or channel username | No | `@yourBotUsername` |
+| `TELEGRAM_ENABLED` | Enable Telegram integration | No | `true` |
+| `WHATSAPP_API_KEY` | WhatsApp Business API key | No | `your-whatsapp-api-key` |
+| `WHATSAPP_ENABLED` | Enable WhatsApp integration | No | `true` |
+| `WEB_ENABLED` | Enable Web API | No | `true` |
+| `LINEAR_TRIGGER_STATUS` | Linear status that triggers AI processing | No | `backlog` |
+| `LINEAR_MOVE_TO_WHEN_FINISH` | Status to move issue when task completes | No | `done` |
+| `LINEAR_API_KEY` | Linear API key | No | `lin_api_...` |
+| `LINEAR_ORGANIZATION_ID` | Linear organization ID | No | `your-organization-id` |
+| `LINEAR_WEBHOOK_SECRET` | Linear webhook secret for verification | No | `your-webhook-secret` |
+| `LINEAR_ENABLED` | Enable Linear integration | No | `true` |
+
+> **Note:** `APP_EXTERNAL_URL` is required for Telegram, Linear, and WhatsApp webhooks to work.
 
 ### AI Providers
 
