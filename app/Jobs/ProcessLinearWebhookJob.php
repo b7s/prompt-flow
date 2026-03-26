@@ -32,8 +32,8 @@ class ProcessLinearWebhookJob implements ShouldQueue
         ProjectActionService $projectActionService,
         ResponseService $responseService,
     ): void {
-        $telegramChatId = config('prompt-flow.linear.telegram_chat_id');
-        $telegramEnabled = config('prompt-flow.channels.telegram.enabled');
+        $telegramChatId = config('prompt-flow.channels.telegram.chat_id');
+        $telegramEnabled = config()->boolean('prompt-flow.channels.telegram.enabled', false);
 
         if ($telegramEnabled && $telegramChatId) {
             $receiveMessage = __('messages.linear.webhook.received', ['title' => $this->issueTitle]);

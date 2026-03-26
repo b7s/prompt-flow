@@ -37,37 +37,28 @@ git clone https://github.com/b7s/prompt-flow.git && cd prompt-flow
 
 ### 2. Configure Environment Variables
 
-Add the following variables to your `.env` file and configure the [Telegram Bot](#telegram-bot) (if needed):
+Add or configure the following variables to your `.env` file:
 
-```env
-APP_EXTERNAL_URL=https://your-external-app-url.com # From ngrok, cloudflare tunnel, vps, etc.
+| Variable | Description | Required | Example |
+|----------|-------------|----------|---------|
+| `APP_EXTERNAL_URL` | Public URL for webhooks (ngrok, cloudflare tunnel, VPS) | Yes | `https://your-external-app-url.com` |
+| `DEFAULT_CLI` | Default CLI tool to use | No | `opencode` or `claudecode` |
+| `AI_FLOW_PROVIDER` | AI provider | No | `anthropic`, `openai`, `ollama` |
+| `AI_FLOW_MODEL` | AI model to use | No | `claude-sonnet-4-6` |
+| `TELEGRAM_BOT_TOKEN` | Telegram bot token from @BotFather | No | `123456789:ABC-DEF...` |
+| `TELEGRAM_CHAT_ID` | Telegram chat ID or channel username | No | `@yourBotUsername` |
+| `TELEGRAM_ENABLED` | Enable Telegram integration | No | `true` |
+| `WHATSAPP_API_KEY` | WhatsApp Business API key | No | `your-whatsapp-api-key` |
+| `WHATSAPP_ENABLED` | Enable WhatsApp integration | No | `true` |
+| `WEB_ENABLED` | Enable Web API | No | `true` |
+| `LINEAR_TRIGGER_STATUS` | Linear status that triggers AI processing | No | `backlog` |
+| `LINEAR_MOVE_TO_WHEN_FINISH` | Status to move issue when task completes | No | `done` |
+| `LINEAR_API_KEY` | Linear API key | No | `lin_api_...` |
+| `LINEAR_ORGANIZATION_ID` | Linear organization ID | No | `your-organization-id` |
+| `LINEAR_WEBHOOK_SECRET` | Linear webhook secret for verification | No | `your-webhook-secret` |
+| `LINEAR_ENABLED` | Enable Linear integration | No | `true` |
 
-# Default CLI (opencode or claudecode)
-DEFAULT_CLI=opencode
-
-# AI Provider (anthropic, openai, ollama, etc.)
-AI_FLOW_PROVIDER=anthropic
-AI_FLOW_MODEL=claude-sonnet-4-6
-
-# Telegram Bot (optional)
-TELEGRAM_BOT_TOKEN=your-telegram-bot-token
-TELEGRAM_ENABLED=true
-
-# WhatsApp (optional)
-WHATSAPP_API_KEY=your-whatsapp-api-key
-WHATSAPP_ENABLED=true
-
-# Linear (optional)
-LINEAR_TRIGGER_STATUS=backlog
-LINEAR_MOVE_TO_WHEN_FINISH=done
-LINEAR_API_KEY=your-linear-api-key
-LINEAR_ORGANIZATION_ID=your-organization-id
-LINEAR_WEBHOOK_SECRET=your-webhook-secret
-LINEAR_TELEGRAM_CHAT_ID=your-telegram-chat-id
-LINEAR_ENABLED=true
-```
-> 1) The external URL is required for communication between Telegram, the API, and Linear.
-> 2) Use the `opencode models` command (or `claude models` for Claude Code) to see available models and providers.
+> **Note:** `APP_EXTERNAL_URL` is required for Telegram, Linear, and WhatsApp webhooks to work.
 
 ### 3. Install
 
@@ -295,7 +286,8 @@ Automate your Linear workflow with AI-powered issue processing:
 4. **Create a webhook**: In Linear Settings > API > Webhooks, add your endpoint:
    - URL: `https://your-app.com/api/webhook/linear`
    - Events: Issues (create, update)
-5. **Set up Telegram notifications** (optional): Configure `LINEAR_TELEGRAM_CHAT_ID` to receive notifications
+5. **Set up Telegram notifications** (optional): Configure `TELEGRAM_CHAT_ID` to receive notifications
+   - Unique identifier for the target chat or username of the target channel (in the format "@channelusername")
 
 **What happens:**
 - When a new issue is created/updated in Linear, the system receives the webhook

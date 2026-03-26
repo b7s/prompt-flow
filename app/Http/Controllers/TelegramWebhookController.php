@@ -11,6 +11,13 @@ class TelegramWebhookController
 {
     public function __invoke(): JsonResponse
     {
+        if (! config()->boolean('prompt-flow.channels.telegram.enabled', false)) {
+            return response()->json([
+                'status' => 'ignored',
+                'message' => '[TELEGRAM] ' . __('messages.webhook.disabled'),
+            ], 400);
+        }
+
         $update = Telegram::getWebhookUpdate();
 
         $message = $update->getMessage();

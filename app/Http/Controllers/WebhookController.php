@@ -11,6 +11,13 @@ class WebhookController
 {
     public function __invoke(WebhookRequest $request): JsonResponse
     {
+        if (! config()->boolean('prompt-flow.channels.web.enabled', false)) {
+            return response()->json([
+                'status' => 'ignored',
+                'message' => '[WEB] ' . __('messages.webhook.disabled'),
+            ], 400);
+        }
+
         ProcessWebhookJob::dispatch(
             message: $request->message,
             channel: ChannelType::from($request->channel),

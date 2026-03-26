@@ -11,6 +11,13 @@ class WhatsAppWebhookController
 {
     public function __invoke(Request $request): JsonResponse
     {
+        if (! config()->boolean('prompt-flow.channels.whatsapp.enabled', false)) {
+            return response()->json([
+                'status' => 'ignored',
+                'message' => '[WHATSAPP] ' . __('messages.webhook.disabled'),
+            ], 400);
+        }
+
         $data = $request->all();
 
         $chatId = $data['entry']['from'] ?? $data['from'] ?? null;

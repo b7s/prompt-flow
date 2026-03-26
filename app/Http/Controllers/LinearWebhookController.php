@@ -12,6 +12,13 @@ class LinearWebhookController
 {
     public function __invoke(Request $request): JsonResponse
     {
+        if (! config()->boolean('prompt-flow.linear.enabled', false)) {
+            return response()->json([
+                'status' => 'ignored',
+                'message' => '[LINEAR] ' . __('messages.webhook.disabled'),
+            ], 400);
+        }
+
         $payload = $request->all();
 
         if (! $this->verifySignature($request)) {
