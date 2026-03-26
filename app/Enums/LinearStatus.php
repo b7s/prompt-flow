@@ -20,4 +20,9 @@ enum LinearStatus: string
     {
         return array_column(self::cases(), 'value');
     }
+
+    public static function moveToWhenFinish(): self
+    {
+        return self::tryFrom(config('prompt-flow.linear_finish_status')) ?? self::Done;
+    }
 }

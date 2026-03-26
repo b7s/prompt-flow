@@ -7,6 +7,7 @@ return [
 
     'default_cli' => env('DEFAULT_CLI', 'opencode'),
 
+
     'ai' => [
         'provider' => env('AI_FLOW_PROVIDER', 'anthropic'),
         'model' => env('AI_FLOW_MODEL', 'claude-sonnet-4-6'),
@@ -24,6 +25,8 @@ return [
     ],
 
     'linear' => [
+        'linear_finish_status' => env('LINEAR_MOVE_TO_WHEN_FINISH', 'done'),
+
         'api_key' => env('LINEAR_API_KEY'),
         'organization_id' => env('LINEAR_ORGANIZATION_ID'),
         'webhook_secret' => env('LINEAR_WEBHOOK_SECRET'),

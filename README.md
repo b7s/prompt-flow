@@ -117,16 +117,6 @@ If you want to put it into production, go with:
 * [Railway](https://railway.com/) / [Render](https://render.com/) for something simpler. 
 * VPS + Nginx + Laravel (DigitalOcean, Hetzner, etc)
 
-### Telegram Bot
-
-1) Create a bot: https://core.telegram.org/bots/tutorial#obtain-your-bot-token
-2) Configure the bot to send messages to your webhook:
-   * Add the Token from Telegram `@BotFather` to your `.env` file
-   * Register your app webhook url:
-     * `php artisan telegram:activate` Direct call
-     * `php artisan install` Also activates telegram (won't stop on failure)
-3) Talk to your bot
-
 ---
 
 ## Usage
@@ -251,11 +241,15 @@ All endpoints require Bearer token authentication:
 
 ### Example Usage with Telegram
 
-1. Create an API key using `php artisan projects`
-2. Configure your Telegram bot token
-3. Send a message to your bot: `Add validation to the login form`
+1) Create a bot: https://core.telegram.org/bots/tutorial#obtain-your-bot-token
+2) Configure the bot to send messages to your webhook:
+    * Add the Token from Telegram `@BotFather` to your `.env` file
+    * Register your app webhook url:
+        * `php artisan telegram:activate` Direct call
+        * `php artisan install` Also activates telegram (won't stop on failure)
+3) Send a message to your bot: `Add validation to the login form`
 
-The system will:
+**What happens:**
 1. ✅ Respond with "Processing..."
 2. 🧠 Analyze which project you're referring to
 3. ⚡ Execute the task using the configured CLI

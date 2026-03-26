@@ -104,8 +104,18 @@ $commandMap = [
 ];
 
 if (in_array($firstArg, ['-h', '--help', '-V', '--version'])) {
-    echo "Usage: pf <command> [options]\n";
-    datatable(
+    echo 'Internal URL: ' . config('app.url') . "\n";
+    echo 'External URL: ' . config('prompt-flow.external_url') . "\n";
+    echo 'Default CLI: ' . config('prompt-flow.default_cli');
+
+    $provider = config('prompt-flow.ai.provider');
+    $provider = $provider ? $provider . ' / ' : '';
+
+    echo ' ('. $provider . config('prompt-flow.ai.model') .')' . "\n";
+
+    echo "\nUsage: pf <command> [options]\n";
+
+    table(
         ['Command', 'Description'],
         array_map(static fn ($command) => [$command, $commandMap[$command]['description']], array_keys($commandMap)),
         7

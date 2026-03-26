@@ -102,7 +102,7 @@ class ProcessLinearWebhookJob implements ShouldQueue
         bool $telegramEnabled,
         string $result,
     ): void {
-        $linearService->updateIssueStatus($this->issueId, LinearStatus::Done);
+        $linearService->updateIssueStatus($this->issueId, LinearStatus::moveToWhenFinish());
 
         $comment = "🤖 AI Task Completed\n\n{$result}";
         $linearService->addIssueComment($this->issueId, $comment);

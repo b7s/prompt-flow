@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\LinearStatus;
+use Exception;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -28,7 +29,7 @@ class LinearService
                 ->json();
 
             return $response['data'] ?? null;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Failed to get Linear issue', [
                 'error' => $e->getMessage(),
                 'issue_id' => $issueId,
@@ -57,7 +58,7 @@ class LinearService
                 ]);
 
             return $response->successful();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Failed to update Linear issue status', [
                 'error' => $e->getMessage(),
                 'issue_id' => $issueId,
@@ -78,7 +79,7 @@ class LinearService
                 ]);
 
             return $response->successful();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Failed to add comment to Linear issue', [
                 'error' => $e->getMessage(),
                 'issue_id' => $issueId,
@@ -98,7 +99,7 @@ class LinearService
                 ]);
 
             return $response->successful();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Failed to add reaction to Linear issue', [
                 'error' => $e->getMessage(),
                 'issue_id' => $issueId,
@@ -129,7 +130,7 @@ class LinearService
                 ->json();
 
             return $response['data']['workflowStates']['nodes'] ?? null;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Failed to list Linear workflow states', [
                 'error' => $e->getMessage(),
             ]);

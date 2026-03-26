@@ -58,7 +58,7 @@ class ResponseService
         };
     }
 
-    protected function sendTelegramMessage(int|string $chatId, string $message): void
+    public function sendTelegramMessage(int|string $chatId, string $message): void
     {
         try {
             Telegram::sendMessage([
