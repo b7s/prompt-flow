@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Enums\CliType;
 use App\Enums\ProjectStatus;
 use App\Models\ApiKey;
 use App\Models\Project;
@@ -32,7 +33,7 @@ class ProjectManagerCommand extends Command
     {
         loop:
         $choice = select(
-            label: trans('prompts.main_menu'),
+            label: __('prompts.main_menu'),
             options: [
                 'list' => 'List Projects',
                 'add' => 'Add Project',
@@ -86,31 +87,31 @@ class ProjectManagerCommand extends Command
     private function addProject(): void
     {
         $name = text(
-            label: trans('prompts.project_name'),
+            label: __('prompts.project_name'),
             placeholder: 'E.g. My AI Project',
             required: true
         );
 
         $description = text(
-            label: trans('prompts.project_description'),
+            label: __('prompts.project_description'),
             placeholder: 'E.g. A Laravel project for AI integration',
         );
 
         $path = text(
-            label: trans('prompts.project_path'),
+            label: __('prompts.project_path'),
             placeholder: 'E.g. /home/user/projects/my-ai-project',
             required: true,
             validate: fn ($value) => is_dir($value) ? null : 'Directory does not exist.'
         );
 
         $status = select(
-            label: trans('prompts.project_status'),
+            label: __('prompts.project_status'),
             options: array_map(static fn ($item) => $item->value, ProjectStatus::cases()),
             default: ProjectStatus::Active->value,
         );
 
         $cli = select(
-            label: trans('prompts.cli_preference'),
+            label: __('prompts.cli_preference'),
             options: [
                 'opencode' => 'OpenCode (Default)',
                 'claudecode' => 'Claude Code',
@@ -138,33 +139,30 @@ class ProjectManagerCommand extends Command
         }
 
         $name = text(
-            label: trans('prompts.project_name'),
+            label: __('prompts.project_name'),
             default: $project->name,
         );
 
         $description = text(
-            label: trans('prompts.project_description'),
+            label: __('prompts.project_description'),
             default: $project->description,
         );
 
         $path = text(
-            label: trans('prompts.project_path'),
+            label: __('prompts.project_path'),
             default: $project->path,
             validate: fn ($value) => $value && ! is_dir($value) ? 'Directory does not exist.' : null
         );
 
         $status = select(
-            label: trans('prompts.project_status'),
-            options: ProjectStatus::class,
+            label: __('prompts.project_status'),
+            options: ProjectStatus::values(),
             default: $project->status->value,
         );
 
         $cli = select(
-            label: trans('prompts.cli_preference'),
-            options: [
-                'opencode' => 'OpenCode',
-                'claudecode' => 'Claude Code',
-            ],
+            label: __('prompts.cli_preference'),
+            options: CliType::values(),
             default: $project->cli_preference,
         );
 
@@ -188,7 +186,7 @@ class ProjectManagerCommand extends Command
         }
 
         $confirmed = confirm(
-            label: trans('prompts.confirm_delete'),
+            label: __('prompts.confirm_delete'),
             default: false,
         );
 
@@ -203,7 +201,7 @@ class ProjectManagerCommand extends Command
     private function searchProjects(): void
     {
         $query = text(
-            label: trans('prompts.search_projects'),
+            label: __('prompts.search_projects'),
             placeholder: 'E.g. Laravel',
         );
 
@@ -272,7 +270,7 @@ class ProjectManagerCommand extends Command
     private function generateApiKey(): void
     {
         $name = text(
-            label: trans('prompts.api_key_name'),
+            label: __('prompts.api_key_name'),
             placeholder: 'E.g. Production Bot',
             required: true,
         );
@@ -351,7 +349,7 @@ class ProjectManagerCommand extends Command
         }
 
         $id = search(
-            label: trans('prompts.select_api_key'),
+            label: __('prompts.select_api_key'),
             options: fn ($search) => $keys
                 ->filter(fn (ApiKey $k) => str_contains(strtolower($k->name), strtolower($search)))
                 ->mapWithKeys(fn (ApiKey $k) => [$k->id => "{$k->name} (".($k->is_active ? 'Active' : 'Inactive').')'])

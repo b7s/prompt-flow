@@ -23,7 +23,7 @@ class TelegramWebhookRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'message.required' => trans('validation.required', ['attribute' => 'message']),
+            'message.required' => __('validation.required', ['attribute' => 'message']),
         ];
     }
 

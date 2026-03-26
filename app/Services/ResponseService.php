@@ -9,16 +9,16 @@ use Telegram\Bot\Laravel\Facades\Telegram;
 
 class ResponseService
 {
-    private array $executingMessages = [];
+    private array $executingMessages;
 
     public function __construct()
     {
-        $this->executingMessages = trans('messages.executing');
+        $this->executingMessages = __('messages.executing');
     }
 
     public function sendProcessingMessage(ChannelType $channel, mixed $chatId): void
     {
-        $message = trans('messages.processing');
+        $message = __('messages.processing');
 
         match ($channel) {
             ChannelType::Telegram => $this->sendTelegramMessage($chatId, $message),
@@ -49,7 +49,7 @@ class ResponseService
 
     public function sendError(ChannelType $channel, mixed $chatId, string $error): void
     {
-        $message = trans('messages.cli_error', ['error' => $error]);
+        $message = __('messages.cli_error', ['error' => $error]);
 
         match ($channel) {
             ChannelType::Telegram => $this->sendTelegramMessage($chatId, $message),

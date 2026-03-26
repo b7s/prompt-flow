@@ -39,6 +39,88 @@ class LinearService
         }
     }
 
+    public function listIssues(string $status = 'open', int $limit = 10): array
+    {
+        try {
+            $stateIds = $this->getStateIdsForStatus($status);
+
+            if (empty($stateIds)) {
+                return [];
+            }
+
+            $response = Http::withHeaders($this->headers())
+                ->post("{$this->baseUrl}/graphql", [
+                    'query' => '
+                        query($states: [String!], $first: Int!) {
+                            issues(filter: { state: { id: { in: $states } } }, first: $first) {
+                                nodes {
+                                    id
+                                    title
+                                    description
+                                    state {
+                                        name
+                                    }
+                                    priority
+                                    createdAt
+                                    identifier
+                                }
+                            }
+                        }
+                    ',
+                    'variables' => [
+                        'states' => $stateIds,
+                        'first' => $limit,
+                    ],
+                ])
+                ->json();
+
+            $issues = $response['data']['issues']['nodes'] ?? [];
+
+            return array_map(static fn ($issue) => [
+                'id' => $issue['id'],
+                'identifier' => $issue['identifier'] ?? '',
+                'title' => $issue['title'] ?? '',
+                'description' => $issue['description'] ?? '',
+                'status' => $issue['state']['name'] ?? '',
+                'priority' => $issue['priority'] ?? 0,
+                'created_at' => $issue['createdAt'] ?? '',
+            ], $issues);
+        } catch (Exception $e) {
+            Log::error('Failed to list Linear issues', [
+                'error' => $e->getMessage(),
+                'status' => $status,
+            ]);
+
+            return [];
+        }
+    }
+
+    private function getStateIdsForStatus(string $status): array
+    {
+        $states = $this->listWorkflowStates();
+
+        if (! $states) {
+            return [];
+        }
+
+        $statusMap = [
+            'open' => ['todo', 'in_progress', 'in_review'],
+            'backlog' => ['backlog'],
+            'todo' => ['todo'],
+            'in_progress' => ['in_progress'],
+            'in_review' => ['in_review'],
+            'done' => ['done'],
+            'canceled' => ['canceled'],
+        ];
+
+        $stateTypes = $statusMap[$status] ?? ['todo', 'in_progress', 'in_review'];
+
+        return collect($states)
+            ->filter(fn ($state) => in_array($state['type'], $stateTypes, true))
+            ->pluck('id')
+            ->toArray();
+    }
+
     public function updateIssueStatus(string $issueId, LinearStatus $status): bool
     {
         try {

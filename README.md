@@ -33,6 +33,13 @@ Automatically selects between **OpenCode** or **Claude Code** based on:
 2. Default configuration
 3. Context analysis
 
+### 📜 Prompt History & Continuation
+Track all AI prompt executions and continue from where you left off:
+- **Automatic Recording** — Every prompt execution is stored with the AI response
+- **Session Continuity** — Continue conversations in the same CLI session
+- **History Lookup** — List and search past executions by project
+- **Continue from History** — Resume any previous task with full context
+
 ---
 
 ## Installation
@@ -210,6 +217,41 @@ pf link --cli=claudecode
 pf link --name="my-project" --description="..." --cli=claudecode
 ```
 
+### Run AI-Powered Prompts
+
+Execute AI-powered commands on your projects directly from the CLI:
+
+```bash
+# Run a prompt
+pf run "list projects"
+
+# Run a prompt on a specific project
+pf run "add login functionality to project my-project"
+
+# Run a prompt to analyze code
+pf run "understand the authentication flow"
+```
+
+The AI will:
+1. Analyze your request and identify the target project
+2. Execute the appropriate tool (list projects, execute command, etc.)
+3. Return plain text results
+
+**Examples:**
+```bash
+# List all projects
+pf run "show me my projects"
+
+# Add a new project
+pf run "add new project called my-app at /path/to/my-app"
+
+# Execute a command on a project
+pf run "run composer install on project my-project"
+
+# Continue a previous session
+pf run "continue from history 1"
+```
+
 ### Unlink a Project
 
 Unlink (remove) a project from PromptFlow:
@@ -278,6 +320,22 @@ Automate your Linear workflow with AI-powered issue processing:
   - Adds a comment with the result
   - Adds a ✅ reaction
   - Sends a Telegram notification (if configured)
+
+### Prompt History & Continuation
+
+Every AI prompt execution is automatically recorded, allowing you to review past interactions and continue from where you left off.
+
+**How it works:**
+1. When you run a prompt on a project, it's stored with the AI response
+2. The CLI session ID is saved so continuations can reuse the same session
+3. You can list history for any project or globally
+4. Continuing from history passes the full context to continue the conversation
+
+**Commands:**
+- **Show history**: "show history", "list history", "what have you done"
+- **Continue**: "continue from history [id]", "continue what we were doing"
+
+The system automatically continues in the same CLI session when possible, maintaining conversation context across multiple interactions.
 
 ---
 

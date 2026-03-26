@@ -18,13 +18,13 @@ class ValidateApiKey
 
         if ($token === null) {
             return response()->json([
-                'error' => trans('messages.auth.unauthorized'),
+                'error' => __('messages.auth.unauthorized'),
             ], 401);
         }
 
         if (! ApiKey::isValid($token)) {
             return response()->json([
-                'error' => trans('messages.auth.invalid_key'),
+                'error' => __('messages.auth.invalid_key'),
             ], 401);
         }
 

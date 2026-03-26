@@ -20,7 +20,7 @@ class WebhookController
 
         return response()->json([
             'status' => 'accepted',
-            'message' => trans('messages.webhook.accepted'),
+            'message' => __('messages.webhook.accepted'),
         ], 202);
     }
 }

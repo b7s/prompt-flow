@@ -82,7 +82,7 @@ $arguments = $argv;
 array_shift($arguments);
 
 $commandString = trim(implode(' ', $arguments));
-$firstArg = $arguments[0] ?? '';
+$firstArg = trim($arguments[0] ?? '');
 
 $commandMap = [
     'link' => [
@@ -96,6 +96,10 @@ $commandMap = [
     'projects' => [
         'command' => 'projects',
         'description' => 'Manage PromptFlow projects'
+    ],
+    'run' => [
+        'command' => 'promptflow:run',
+        'description' => 'Run a prompt to execute AI-powered project actions'
     ],
     'install' => [
         'command' => 'install',
@@ -117,13 +121,12 @@ if (in_array($firstArg, ['-h', '--help', '-V', '--version'])) {
 
     table(
         ['Command', 'Description'],
-        array_map(static fn ($command) => [$command, $commandMap[$command]['description']], array_keys($commandMap)),
-        7
+        array_map(static fn ($command) => [$command, $commandMap[$command]['description']], array_keys($commandMap))
     );
     exit(1);
 }
 
-if ($firstArg === '' || $firstArg === null) {
+if ($firstArg === '') {
     $commandString = 'projects';
 } else if (isset($commandMap[$firstArg])) {
     $extraArgs = '';
@@ -136,7 +139,5 @@ if ($firstArg === '' || $firstArg === null) {
 header('Content-Type: text/plain');
 
 passthru($promptFlowPath . '/artisan ' . $commandString, $exitCode);
-
-echo Artisan::output();
 
 exit($exitCode);

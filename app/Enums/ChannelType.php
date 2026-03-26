@@ -10,7 +10,7 @@ enum ChannelType: string
 
     public function label(): string
     {
-        return trans('messages.channel_type.'.$this->value);
+        return __('messages.channel_type.'.$this->value);
     }
 
     public static function values(): array

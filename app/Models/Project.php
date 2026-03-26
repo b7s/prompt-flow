@@ -99,7 +99,7 @@ class Project extends Model
             return [
                 'exists' => true,
                 'project_name' => $existing->name,
-                'message' => trans('messages.validation.path_exists', ['name' => $existing->name]),
+                'message' => __('messages.validation.path_exists', ['name' => $existing->name]),
             ];
         }
 

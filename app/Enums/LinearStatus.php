@@ -13,7 +13,7 @@ enum LinearStatus: string
 
     public function label(): string
     {
-        return trans('messages.linear.status.'.$this->value);
+        return __('messages.linear.status.'.$this->value);
     }
 
     public static function values(): array

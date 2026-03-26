@@ -69,7 +69,7 @@ class ProcessWebhookJob implements ShouldQueue
             $responseService->sendError(
                 $this->channel,
                 $this->chatId,
-                trans('messages.processing_error')
+                __('messages.processing_error')
             );
         }
     }

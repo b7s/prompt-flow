@@ -10,7 +10,7 @@ enum ProjectStatus: string
 
     public function label(): string
     {
-        return trans('messages.project_status.'.$this->value);
+        return __('messages.project_status.'.$this->value);
     }
 
     public static function values(): array

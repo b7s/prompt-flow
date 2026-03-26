@@ -36,7 +36,7 @@ class ProcessLinearWebhookJob implements ShouldQueue
         $telegramEnabled = config('prompt-flow.channels.telegram.enabled');
 
         if ($telegramEnabled && $telegramChatId) {
-            $receiveMessage = trans('messages.linear.webhook.received', ['title' => $this->issueTitle]);
+            $receiveMessage = __('messages.linear.webhook.received', ['title' => $this->issueTitle]);
             $responseService->sendTelegramMessage($telegramChatId, $receiveMessage);
         }
 
@@ -109,7 +109,7 @@ class ProcessLinearWebhookJob implements ShouldQueue
         $linearService->addIssueReaction($this->issueId, '✅');
 
         if ($telegramEnabled && $telegramChatId) {
-            $finishMessage = trans('messages.linear.webhook.completed', ['title' => $this->issueTitle]);
+            $finishMessage = __('messages.linear.webhook.completed', ['title' => $this->issueTitle]);
             $responseService->sendTelegramMessage($telegramChatId, $finishMessage."\n\n".$result);
         }
     }
@@ -126,7 +126,7 @@ class ProcessLinearWebhookJob implements ShouldQueue
         $linearService->addIssueReaction($this->issueId, '❌');
 
         if ($telegramEnabled && $telegramChatId) {
-            $errorMessage = trans('messages.linear.webhook.error', ['error' => $error]);
+            $errorMessage = __('messages.linear.webhook.error', ['error' => $error]);
             $responseService->sendTelegramMessage($telegramChatId, $errorMessage);
         }
     }
