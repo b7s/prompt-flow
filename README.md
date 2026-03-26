@@ -1,10 +1,15 @@
+
+<div align="center" style="text-align: center">
+<img src="docs/logo.webp" width="250">
+
 # Prompt Flow
 
-A powerful Laravel-based system for managing programming projects through AI-powered webhook integrations. Receive commands via Telegram, WhatsApp, or Web API, manage projects with AI assistance, and execute tasks using OpenCode or Claude Code CLI.
+A powerful Laravel-based system for managing programming projects through AI-powered webhook integrations. Receive commands via Telegram, Linear, or Web API, manage projects with AI assistance, and execute tasks using OpenCode or Claude Code CLI.
 
 ![PHP](https://img.shields.io/badge/PHP-8.4+-777BB4?style=for-the-badge&logo=php)
 ![Laravel](https://img.shields.io/badge/Laravel-13.x-FF2D20?style=for-the-badge&logo=laravel)
 ![AI](https://img.shields.io/badge/AI-SDK-FF6C37?style=for-the-badge)
+</div>
 
 ---
 
@@ -16,29 +21,9 @@ Automatically identifies which project you're referring to by analyzing your mes
 ### 📱 Multi-Channel Webhooks
 Receive requests from multiple sources:
 - **Telegram Bot** — Send commands directly to your Telegram bot
-- **WhatsApp** — Receive commands via WhatsApp Business API
 - **Web API** — RESTful endpoint for custom integrations
 - **Linear** — AI-powered issue processing via webhooks
-
-### 🖥️ Interactive CLI Manager
-Beautiful terminal interface using Laravel Prompts for:
-- Adding, editing, and removing projects
-- Searching project databases
-- Managing API keys
-- Viewing project status in formatted tables
-
-### 🎯 Flexible CLI Execution
-Automatically selects between **OpenCode** or **Claude Code** based on:
-1. Project-specific preference
-2. Default configuration
-3. Context analysis
-
-### 📜 Prompt History & Continuation
-Track all AI prompt executions and continue from where you left off:
-- **Automatic Recording** — Every prompt execution is stored with the AI response
-- **Session Continuity** — Continue conversations in the same CLI session
-- **History Lookup** — List and search past executions by project
-- **Continue from History** — Resume any previous task with full context
+- **CLI** — Run commands directly from the command line
 
 ---
 
