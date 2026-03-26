@@ -385,6 +385,98 @@ Webhook jobs are dispatched to the queue, allowing:
 
 ---
 
+
+## System Flow
+
+```
+┌───────────────────────────────────────────────────────────────────────────┐
+│                                INPUT CHANNELS                             │
+├────────────────┬────────────────┬────────────────┬────────────────────────┤
+│   Telegram     │    WhatsApp    │    Web API     │         Linear         │
+│      Bot       │    Business    │    RESTful     │      Issue Webhook     │
+└───────┬────────┴───────┬────────┴───────┬────────┴───────────┬────────────┘
+        │                │                │                    │
+        └────────────────┴────────────────┴────────────────────┘
+                                      │
+                                      ▼
+                    ┌─────────────────────────────────┐
+                    │         Webhook Endpoint        │
+                    │          /api/webhook/*         │
+                    │       (Bearer Token Auth)       │
+                    └─────────────────┬───────────────┘
+                                      │
+                                      ▼
+                    ┌─────────────────────────────────┐
+                    │      Queue-Based Processing     │
+                    │    (Instant Response + Async)   │
+                    └─────────────────┬───────────────┘
+                                      │
+                                      ▼
+                    ┌─────────────────────────────────┐
+                    │     AI Context Analysis         │
+                    │  • Identifies target project    │
+                    │  • Understands user intent      │
+                    │  • Analyzes message context     │
+                    └─────────────────┬───────────────┘
+                                      │
+                                      ▼
+                    ┌─────────────────────────────────┐
+                    │        Project Database         │
+                    │   ┌─────────────────────────┐   │
+                    │   │ • Name & Path           │   │
+                    │   │ • Type (Laravel, etc.)  │   │
+                    │   │ • CLI Preference        │   │
+                    │   │ • Status                │   │
+                    │   └─────────────────────────┘   │
+                    └─────────────────┬───────────────┘
+                                      │
+                                      ▼
+              ┌───────────────────────────────────────────────┐
+              │            CLI Executor Service               │
+              │  Selects: OpenCode ◄──► Claude Code           │
+              │  Priority: Project → Default → Context        │
+              └───────────────────────┬───────────────────────┘
+                                      │
+                                      ▼
+                    ┌─────────────────────────────────┐
+                    │      AI Prompt Execution        │
+                    │   • Executes task on project    │
+                    │   • Records to history          │
+                    │   • Maintains session context   │
+                    └─────────────────┬───────────────┘
+                                      │
+                                      ▼
+                    ┌────────────────────────────────────┐
+                    │         Response Service           │
+                    │   • Formats result                 │
+                    │   • Sends to origin channel        │
+                    │   • Updates Linear (if applicable) │
+                    └────────────────────────────────────┘
+                                      │
+        ┌─────────────────────────────┼─────────────────────────────┐
+        │                             │                             │
+        ▼                             ▼                             ▼
+┌───────────────┐          ┌───────────────────┐          ┌─────────────────┐
+│   Telegram    │          │    WhatsApp       │          │     Linear      │
+│   Response    │          │    Response       │          │  • Status: Done │
+│               │          │                   │          │  • Comment      │
+│               │          │                   │          │  • Reaction ✅  │
+└───────────────┘          └───────────────────┘          └─────────────────┘
+```
+
+### Flow Summary
+
+1. **Receive** — User sends command via Telegram/WhatsApp/API/Linear
+2. **Authenticate** — Validate Bearer token
+3. **Queue** — Dispatch a job for async processing (instant confirmation response)
+4. **Analyze** — AI identifies the target project and user intent
+5. **Select CLI** — Choose OpenCode or Claude Code based on project/config
+6. **Execute** — Run an AI-powered task on the project
+7. **Record** — Store prompt and response in history
+8. **Respond** — Send a result back to the originating channel
+
+---
+
 ## Requirements
 
 - PHP 8.4+
