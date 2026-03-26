@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\LinearStatus;
 use App\Jobs\ProcessLinearWebhookJob;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -26,6 +27,23 @@ class LinearWebhookController
 
         if ($action !== 'create' && $action !== 'update') {
             return response()->json(['status' => 'ignored', 'reason' => 'unsupported_action']);
+        }
+
+        $triggerStatus = config('prompt-flow.linear.trigger_status', 'backlog');
+        $issueState = $data['state'] ?? null;
+
+        if ($issueState) {
+            $stateName = is_array($issueState) ? ($issueState['name'] ?? null) : null;
+            $expectedStatusName = LinearStatus::from($triggerStatus)->label();
+
+            if ($stateName !== $expectedStatusName) {
+                return response()->json([
+                    'status' => 'ignored',
+                    'reason' => 'status_mismatch',
+                    'current' => $stateName,
+                    'expected' => $expectedStatusName,
+                ]);
+            }
         }
 
         $issueId = $data['id'] ?? null;

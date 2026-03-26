@@ -66,6 +66,8 @@ WHATSAPP_API_KEY=your-whatsapp-api-key
 WHATSAPP_ENABLED=true
 
 # Linear (optional)
+LINEAR_TRIGGER_STATUS=backlog
+LINEAR_MOVE_TO_WHEN_FINISH=done
 LINEAR_API_KEY=your-linear-api-key
 LINEAR_ORGANIZATION_ID=your-organization-id
 LINEAR_WEBHOOK_SECRET=your-webhook-secret
@@ -261,7 +263,7 @@ Automate your Linear workflow with AI-powered issue processing:
 
 1. **Create a Linear API key**: Go to Settings > API > Create a personal API key
 2. **Get your Organization ID**: Find it in the URL (e.g., `linear.app/team/your-org-id/...`)
-3. **Configure your `.env`** with the Linear variables (see above)
+3. **Configure your `.env`** with the Linear variables 
 4. **Create a webhook**: In Linear Settings > API > Webhooks, add your endpoint:
    - URL: `https://your-app.com/api/webhook/linear`
    - Events: Issues (create, update)

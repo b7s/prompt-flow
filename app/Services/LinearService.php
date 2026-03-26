@@ -147,16 +147,7 @@ class LinearService
             return null;
         }
 
-        $statusToStateName = [
-            LinearStatus::Backlog->value => 'Backlog',
-            LinearStatus::Todo->value => 'Todo',
-            LinearStatus::InProgress->value => 'In Progress',
-            LinearStatus::InReview->value => 'In Review',
-            LinearStatus::Done->value => 'Done',
-            LinearStatus::Canceled->value => 'Canceled',
-        ];
-
-        $targetStateName = $statusToStateName[$status->value] ?? null;
+        $targetStateName = $status->label();
 
         foreach ($states as $state) {
             if ($state['name'] === $targetStateName && $state['type'] === 'active') {
