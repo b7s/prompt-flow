@@ -66,7 +66,8 @@ LINEAR_WEBHOOK_SECRET=your-webhook-secret
 LINEAR_TELEGRAM_CHAT_ID=your-telegram-chat-id
 LINEAR_ENABLED=true
 ```
-> Use the `opencode models` command (or `claude models` for Claude Code) to see available models and providers.
+> 1) The external URL is required for communication between Telegram, the API, and Linear.
+> 2) Use the `opencode models` command (or `claude models` for Claude Code) to see available models and providers.
 
 ### 3. Install
 
