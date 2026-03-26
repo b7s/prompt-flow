@@ -26,27 +26,32 @@ readonly class AiContextService
         }
 
         try {
-            $projects = $this->projectService->getActiveProjects();
-            $defaultCli = config('prompt-flow.default_cli', 'opencode');
+            $projects = $this->getActiveProjects();
 
-            $projectsData = $projects->map(fn (Project $project) => [
+            $projectsData = $projects->map(static fn (Project $project) => [
                 'id' => $project->id,
                 'name' => $project->name,
                 'path' => $project->path,
                 'description' => $project->description,
                 'status' => $project->status->value,
                 'cli_preference' => $project->cli_preference,
-            ])->toArray();
+            ])->all();
 
             $agent = new ProjectContextAgent(
                 userMessage: $userMessage,
                 projects: $projectsData,
-                defaultCli: $defaultCli,
             );
 
-            $contextMessage = "User message: {$userMessage}\n\nRegistered projects:\n";
-            $contextMessage .= collect($projectsData)->map(fn ($p) => "- Name: {$p['name']}, Path: {$p['path']}, Status: {$p['status']}")->join("\n");
+            $datetime = now()->toIso8601String();
+
+            $contextMessage = "Current datetime: {$datetime}\n\n";
+            $contextMessage .= "User message: {$userMessage}\n\n";
+            $contextMessage .= "Registered projects:\n";
+            $contextMessage .= collect($projectsData)
+                ->map(static fn ($p) => "- Name: {$p['name']}, Path: {$p['path']}, Status: {$p['status']}")
+                ->join("\n");
             $contextMessage .= "\n\nUse execute_prompt tool with project_name or project_path to run commands on a project.";
+            $contextMessage .= "\n\nDon't format as markdown. Format only as plain text with: newlines, paragraphs, and bullet points. Use emojis where appropriate.";
 
             Log::info('AI Request', [
                 'message' => $userMessage,

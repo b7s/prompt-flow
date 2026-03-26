@@ -21,7 +21,6 @@ class ProjectContextAgent implements Agent, HasTools
     public function __construct(
         public string $userMessage,
         public array $projects,
-        public string $defaultCli,
     ) {}
 
     public function provider(): string
@@ -43,20 +42,10 @@ You have access to tools to manage projects and CLI sessions. Use the appropriat
 
 IMPORTANT: Do NOT use any formatting like markdown, bold, italics, or code blocks. Plain text only.
 
-Available actions via tools:
-- list_projects: List all projects the user has registered
-- add_project: Add a new project (requires name, path, optional description, cli_preference)
-- search_projects: Search for projects (requires query)
-- edit_project: Edit a project (requires project_id, optional name, description, path, status, cli_preference)
-- remove_project: Remove a project (requires project_id)
-- execute_prompt: Execute a prompt on a project (requires project_path OR project_name, plus prompt). The project can be identified by its full path or by name (partial match is supported).
-- list_sessions: List all opencode CLI sessions. Supports filtering by project_path or project_name. When user mentions a project name (e.g., "fluentvox"), use project_name parameter to filter sessions for that project.
-- execute_on_session: Execute a prompt on an existing session (requires session_id and prompt, optional project_path)
+When user wants to run a command on a project (e.g., "understand some project x", "add login to my project", "fix bug in Teste"), use execute_prompt.
+When user wants to see sessions for a project (e.g., "list sessions for project x"), use list_sessions with project_name parameter.
 
-When user wants to run a command on a project (e.g., "understand some project", "add login to my project", "fix bug in Teste"), use execute_prompt.
-When user wants to see sessions for a project (e.g., "list sessions for fluentvox"), use list_sessions with project_name parameter.
-
-IMPORTANT: When user mentions a project name like "fluentvox", first find the matching project from the registered projects, then use its path or name to filter sessions.
+IMPORTANT: When user mentions a project name like "project x", first find the matching project from the registered projects, then use its path or name to filter sessions.
 
 Always use a tool when the user requests an action. Reply in the same language as the user.
 PROMPT;
@@ -64,7 +53,9 @@ PROMPT;
 
     public function messages(): iterable
     {
-        $projectsList = collect($this->projects)->map(fn ($p) => "- Name: {$p['name']}, Path: {$p['path']}")->join("\n");
+        $projectsList = collect($this->projects)
+            ->map(static fn ($p) => "- Name: {$p['name']}, Path: {$p['path']}")
+            ->join("\n");
         $projectsText = $projectsList ?: 'No projects registered yet.';
 
         return [

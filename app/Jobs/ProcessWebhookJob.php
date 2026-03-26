@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Enums\ChannelType;
+use App\Enums\CliType;
 use App\Services\AiContextService;
 use App\Services\ProjectActionService;
 use App\Services\ResponseService;
@@ -44,8 +45,7 @@ class ProcessWebhookJob implements ShouldQueue
                 return;
             }
 
-            $defaultCli = config('prompt-flow.default_cli', 'opencode');
-            $result = $projectActionService->execute($aiResult, $defaultCli);
+            $result = $projectActionService->execute($aiResult, CliType::default());
 
             if ($result['success']) {
                 $responseService->sendResult(

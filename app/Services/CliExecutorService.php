@@ -3,8 +3,10 @@
 namespace App\Services;
 
 use App\Enums\CliType;
+use Illuminate\Process\ProcessResult;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Process;
+use JsonException;
 
 class CliExecutorService
 {
@@ -22,26 +24,7 @@ class CliExecutorService
         try {
             $result = Process::timeout(300)->run($command);
 
-            if ($result->successful()) {
-                $output = $result->output();
-
-                $lines = array_filter(explode("\n", trim($output)));
-                $lastLine = end($lines);
-
-                $jsonOutput = json_decode($lastLine, true, 512, JSON_THROW_ON_ERROR);
-
-                return [
-                    'success' => true,
-                    'output' => $jsonOutput ?? $output,
-                    'raw' => $output,
-                ];
-            }
-
-            return [
-                'success' => false,
-                'error' => $result->errorOutput() ?: $result->output(),
-                'exit_code' => $result->exitCode(),
-            ];
+            return $this->handleSuccessfulResult($result);
         } catch (\Exception $e) {
             Log::error('CLI execution failed', [
                 'error' => $e->getMessage(),
@@ -71,9 +54,10 @@ class CliExecutorService
         }
     }
 
-    public function listSessions(?int $maxCount = 10): array
+    public function listSessions(?int $maxCount = 10, ?CliType $cli = null, ?string $projectPath = null): array
     {
-        $command = ['opencode', 'session', 'list', '--format', 'json'];
+        $cli ??= CliType::default();
+        $command = [$cli->executable(), 'session', 'list', '--format', 'json'];
 
         if ($maxCount) {
             $command[] = '--max-count';
@@ -81,7 +65,11 @@ class CliExecutorService
         }
 
         try {
-            $result = Process::timeout(30)->run($command);
+            $process = Process::timeout(30);
+            if ($projectPath) {
+                $process = $process->path($projectPath);
+            }
+            $result = $process->run($command);
 
             if ($result->successful()) {
                 $sessions = json_decode($result->output(), true, 512, JSON_THROW_ON_ERROR);
@@ -104,10 +92,11 @@ class CliExecutorService
         }
     }
 
-    public function executeOnSession(string $sessionId, string $prompt, ?string $projectPath = null): array
+    public function executeOnSession(string $sessionId, string $prompt, ?string $projectPath = null, ?CliType $cli = null): array
     {
+        $cli ??= CliType::default();
         $command = [
-            'opencode',
+            $cli->executable(),
             'run',
             '--format', 'json',
             '--session', $sessionId,
@@ -124,31 +113,17 @@ class CliExecutorService
             'session_id' => $sessionId,
             'prompt' => $prompt,
             'command' => $command,
+            'project_path' => $projectPath,
         ]);
 
         try {
-            $result = Process::timeout(300)->run($command);
-
-            if ($result->successful()) {
-                $output = $result->output();
-
-                $lines = array_filter(explode("\n", trim($output)));
-                $lastLine = end($lines);
-
-                $jsonOutput = json_decode($lastLine, true, 512, JSON_THROW_ON_ERROR);
-
-                return [
-                    'success' => true,
-                    'output' => $jsonOutput ?? $output,
-                    'raw' => $output,
-                ];
+            $process = Process::timeout(300);
+            if ($projectPath) {
+                $process = $process->path($projectPath);
             }
+            $result = $process->run($command);
 
-            return [
-                'success' => false,
-                'error' => $result->errorOutput() ?: $result->output(),
-                'exit_code' => $result->exitCode(),
-            ];
+            return $this->handleSuccessfulResult($result);
         } catch (\Exception $e) {
             Log::error('CLI execution on session failed', [
                 'error' => $e->getMessage(),
@@ -161,5 +136,24 @@ class CliExecutorService
                 'error' => $e->getMessage(),
             ];
         }
+    }
+
+    /**
+     * @throws JsonException
+     */
+    private function handleSuccessfulResult(ProcessResult $result): array
+    {
+        $output = $result->output();
+
+        $lines = array_filter(explode("\n", trim($output)));
+        $lastLine = end($lines);
+
+        $jsonOutput = json_decode($lastLine, true, 512, JSON_THROW_ON_ERROR);
+
+        return [
+            'success' => true,
+            'output' => $jsonOutput ?? $output,
+            'raw' => $output,
+        ];
     }
 }

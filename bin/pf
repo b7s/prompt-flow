@@ -18,6 +18,7 @@
 
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Support\Facades\Artisan;
+use function Laravel\Prompts\datatable;
 use function Laravel\Prompts\table;
 
 $startDir = getcwd() ?: '.';
@@ -104,9 +105,10 @@ $commandMap = [
 
 if (in_array($firstArg, ['-h', '--help', '-V', '--version'])) {
     echo "Usage: pf <command> [options]\n";
-    table(
+    datatable(
         ['Command', 'Description'],
-        array_map(static fn ($command) => [$command, $commandMap[$command]['description']], array_keys($commandMap))
+        array_map(static fn ($command) => [$command, $commandMap[$command]['description']], array_keys($commandMap)),
+        7
     );
     exit(1);
 }

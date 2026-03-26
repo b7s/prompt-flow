@@ -6,11 +6,12 @@ use App\Enums\CliType;
 use App\Enums\ProjectStatus;
 use App\Models\Project;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\File;
 
 readonly class AiProjectManager
 {
     public function __construct(
-        private ProjectService     $projectService,
+        private ProjectService $projectService,
         private CliExecutorService $cliExecutor,
     ) {}
 
@@ -50,6 +51,9 @@ readonly class AiProjectManager
                 'data' => $data,
             ];
         }
+
+        // Create dir if not exists
+        File::ensureDirectoryExists($data['path']);
 
         $project = $this->projectService->create($data);
 

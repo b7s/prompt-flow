@@ -43,6 +43,8 @@ git clone https://github.com/b7s/prompt-flow.git && cd prompt-flow
 
 ### 2. Configure Environment Variables
 
+Add the following variables to your `.env` file and configure the [Telegram Bot](#telegram-bot) (if needed):
+
 ```env
 APP_EXTERNAL_URL=https://your-external-app-url.com # From ngrok, cloudflare tunnel, vps, etc.
 
@@ -69,7 +71,12 @@ WHATSAPP_ENABLED=true
 php artisan install
 ```
 
-> This will automatically detect your operating system, install the necessary dependencies and configure Telegram Bot (if .env is correct).
+This will:
+- ✅ Detect your operating system (Linux, macOS, Windows)
+- ✅ Check if Supervisor is installed
+- ✅ Create Supervisor configuration automatically
+- ✅ Set up the global `pf` CLI command
+- ✅ Provide next steps instructions
 
 ### 4. Start server:
 
@@ -78,36 +85,6 @@ php artisan serve
 ```
 
 ---
-
-## Production Setup
-
-Run the automatic installation command:
-
-```bash
-php artisan install
-```
-
-This will:
-- ✅ Detect your operating system (Linux, macOS, Windows)
-- ✅ Check if Supervisor is installed
-- ✅ Create Supervisor configuration automatically
-- ✅ Set up the global `pf` CLI command
-- ✅ Provide next steps instructions
-
-**If Supervisor is not installed**, the command will show platform-specific installation instructions.
-
-After installation, start the queue workers:
-
-```bash
-sudo supervisorctl start prompt-flow-worker:*
-```
-
-For alternative queue drivers like Redis, update your `.env`:
-
-```env
-QUEUE_CONNECTION=redis
-REDIS_HOST=127.0.0.1
-```
 
 ## Expose your application externally
 
@@ -266,11 +243,7 @@ All endpoints require Bearer token authentication:
 
 1. Create an API key using `php artisan projects`
 2. Configure your Telegram bot token
-3. Send a message to your bot:
-
-```
-Add validation to the login form
-```
+3. Send a message to your bot: `Add validation to the login form`
 
 The system will:
 1. ✅ Respond with "Processing..."

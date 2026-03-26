@@ -13,6 +13,7 @@ use JsonException;
 use Laravel\Ai\Contracts\Tool;
 use Laravel\Ai\Tools\Request;
 use Stringable;
+use Throwable;
 
 use function json_encode;
 
@@ -36,8 +37,7 @@ class ExecutePrompt implements Tool
             try {
                 $responseService = App::make(ResponseService::class);
                 $responseService->sendExecutingMessage($channel, $chatId);
-            } catch (\Throwable $e) {
-                // Ignore errors in sending executing message
+            } catch (Throwable $e) {
             }
         }
 
@@ -80,7 +80,7 @@ class ExecutePrompt implements Tool
         return [
             'project_path' => $schema->string()->nullable()->description('The absolute path to the project (e.g., /home/user/projects/fluentvox)'),
             'project_name' => $schema->string()->nullable()->description('The project name or part of the name (e.g., fluentvox, Teste) - will be matched against project names and paths'),
-            'prompt' => $schema->string()->required()->description('The task/prompt to execute on the project (e.g., "understand the codebase", "add login")'),
+            'prompt' => $schema->string()->required()->description('The task/prompt to execute on the project (e.g., "understand the codebase", "add login", "fix this bug", "refactor this code", "explain this function")'),
         ];
     }
 }

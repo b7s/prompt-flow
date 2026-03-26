@@ -7,7 +7,7 @@ use App\Http\Middleware\ValidateApiKey;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(ValidateApiKey::class)->group(function () {
-    Route::post('/webhook', [WebhookController::class, '__invoke'])->name('webhook');
+    Route::post('/webhook', [WebhookController::class, '__invoke'])->name('web.webhook');
     Route::post('/webhook/telegram', [TelegramWebhookController::class, '__invoke'])->name('telegram.webhook');
     Route::post('/webhook/whatsapp', [WhatsAppWebhookController::class, '__invoke'])->name('whatsapp.webhook');
 });

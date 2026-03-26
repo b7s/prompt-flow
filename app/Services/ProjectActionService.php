@@ -2,21 +2,23 @@
 
 namespace App\Services;
 
+use App\Enums\CliType;
 use App\Models\Project;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
-class ProjectActionService
+readonly class ProjectActionService
 {
     public function __construct(
         private AiProjectManager $projectManager,
         private CliExecutorService $cliExecutor,
     ) {}
 
-    public function execute(array $actionData, ?string $defaultCli = 'opencode'): array
+    public function execute(array $actionData, ?CliType $defaultCli = null): array
     {
         $action = $actionData['action'] ?? 'help';
         $params = $actionData['params'] ?? [];
+        $defaultCli ??= CliType::default();
 
         return match ($action) {
             'list_projects' => $this->listProjects(),
@@ -24,7 +26,7 @@ class ProjectActionService
             'search_projects' => $this->searchProjects($params),
             'edit_project' => $this->editProject($params),
             'remove_project' => $this->removeProject($params),
-            'execute_prompt' => $this->executePrompt($params, $defaultCli),
+            'execute_prompt' => $this->executePrompt($params, $defaultCli->value),
             default => $this->help(),
         };
     }

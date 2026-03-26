@@ -2,6 +2,7 @@
 
 namespace App\Ai\Tools;
 
+use App\Enums\ProjectStatus;
 use App\Services\AiProjectManager;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
@@ -35,7 +36,7 @@ class ListProjects implements Tool
     public function schema(JsonSchema $schema): array
     {
         return [
-            'status' => $schema->string()->nullable()->description('Filter by status: active, inactive, or archived'),
+            'status' => $schema->string()->nullable()->description('Filter by status: '.implode(', ', ProjectStatus::values())),
         ];
     }
 }
