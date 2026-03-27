@@ -52,6 +52,7 @@ class ValidateApiKey
             'telegram.webhook',
             'whatsapp.webhook',
             'linear.webhook',
+            'nightwatch.webhook',
         ]);
     }
 }

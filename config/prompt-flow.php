@@ -24,7 +24,7 @@ return [
         ],
         'web' => [
             'enabled' => env('WEB_ENABLED', false),
-        ]
+        ],
     ],
 
     'linear' => [
@@ -35,5 +35,10 @@ return [
         'api_key' => env('LINEAR_API_KEY'),
         'organization_id' => env('LINEAR_ORGANIZATION_ID'),
         'webhook_secret' => env('LINEAR_WEBHOOK_SECRET'),
+    ],
+
+    'nightwatch' => [
+        'enabled' => env('NIGHTWATCH_ENABLED', false),
+        'webhook_secret' => env('NIGHTWATCH_WEBHOOK_SECRET'),
     ],
 ];

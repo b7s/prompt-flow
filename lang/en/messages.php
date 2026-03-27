@@ -63,6 +63,19 @@ return [
         ],
     ],
 
+    'nightwatch' => [
+        'webhook' => [
+            'received' => '🐛 Nightwatch exception detected: :title',
+            'completed' => '✅ Exception handled: :title',
+            'error' => '❌ Failed to process Nightwatch issue: :error',
+            'resolved' => '✅ Issue resolved: :title',
+            'reopened' => '🔔 Issue reopened: :title',
+            'ignored' => '➖ Issue ignored: :title',
+            'ignored_opened' => '🔍 Issue detected but ignored (type: :type): :title',
+            'event' => '📬 Nightwatch event (:event): :title',
+        ],
+    ],
+
     'validation' => [
         'path_exists' => "A project named ':name' already exists at this path.",
     ],
