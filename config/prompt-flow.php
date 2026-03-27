@@ -14,13 +14,13 @@ return [
 
     'channels' => [
         'telegram' => [
-            'bot_token' => env('TELEGRAM_BOT_TOKEN'),
             'enabled' => env('TELEGRAM_ENABLED', false),
+            'bot_token' => env('TELEGRAM_BOT_TOKEN'),
             'chat_id' => env('TELEGRAM_CHAT_ID'),
         ],
         'whatsapp' => [
-            'api_key' => env('WHATSAPP_API_KEY'),
             'enabled' => env('WHATSAPP_ENABLED', false),
+            'api_key' => env('WHATSAPP_API_KEY'),
         ],
         'web' => [
             'enabled' => env('WEB_ENABLED', false),

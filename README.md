@@ -258,8 +258,8 @@ All endpoints require Bearer token authentication:
 2) Configure the bot to send messages to your webhook:
     * Add the Token from Telegram `@BotFather` to your `.env` file
     * Register your app webhook url:
-        * `php artisan telegram:activate` Direct call
-        * `php artisan install` Also activates telegram (won't stop on failure)
+        * `php artisan telegram:activate` Direct call – when you ready
+        * `php artisan install` Also activates Telegram
 3) Send a message to your bot: `Add validation to the login form`
 
 **What happens:**
@@ -357,7 +357,8 @@ The system automatically continues in the same CLI session when possible, mainta
 | `NIGHTWATCH_WEBHOOK_SECRET` | Nightwatch webhook secret for verification | No | `your-webhook-secret` |
 | `NIGHTWATCH_ENABLED` | Enable Nightwatch integration | No | `true` |
 
-> **Note:** `APP_EXTERNAL_URL` is required for Telegram, Linear, and WhatsApp webhooks to work.
+> **Note:** `APP_EXTERNAL_URL` is required for Telegram, Linear, etc., webhooks to work.
+> Can be the same as `APP_URL` if you're running on the same server.
 
 ### AI Providers
 
