@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\ChannelType;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Telegram\Bot\Laravel\Facades\Telegram;
@@ -29,13 +30,16 @@ class ResponseService
 
     public function sendExecutingMessage(ChannelType $channel, mixed $chatId): void
     {
-        $message = $this->executingMessages[array_rand($this->executingMessages)];
+        if(Cache::add('avoid-multiples-messages', true, now()->addSeconds(30)))
+        {
+            $message = $this->executingMessages[array_rand($this->executingMessages)];
 
-        match ($channel) {
-            ChannelType::Telegram => $this->sendTelegramMessage($chatId, $message),
-            ChannelType::WhatsApp => $this->sendWhatsAppMessage($chatId, $message),
-            ChannelType::Web => null,
-        };
+            match ($channel) {
+                ChannelType::Telegram => $this->sendTelegramMessage($chatId, $message),
+                ChannelType::WhatsApp => $this->sendWhatsAppMessage($chatId, $message),
+                ChannelType::Web => null,
+            };
+        }
     }
 
     public function sendResult(ChannelType $channel, mixed $chatId, string $result): void
