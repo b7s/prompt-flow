@@ -11,9 +11,15 @@ use App\Services\CliExecutorService;
 use App\Services\CliProcessTracker;
 use App\Services\ResponseService;
 use Illuminate\Contracts\Container\BindingResolutionException;
-use Illuminate\Support\Facades\App;
 use JsonException;
 use Throwable;
+
+use function mb_substr;
+use function now;
+use function preg_replace;
+use function str_contains;
+use function strtolower;
+use function trim;
 
 class ExecutePromptAction
 {
@@ -84,7 +90,7 @@ class ExecutePromptAction
 
         $project = Project::query()
             ->select(['id', 'name', 'path'])
-            ->where(function ($query) use ($searchTerm) {
+            ->where(static function ($query) use ($searchTerm) {
                 $query->whereRaw("REPLACE(LOWER(name), ' ', '') LIKE ?", ["%{$searchTerm}%"])
                     ->orWhereRaw("REPLACE(LOWER(path), ' ', '') LIKE ?", ["%{$searchTerm}%"])
                     ->orWhereRaw("REPLACE(LOWER(name), ' ', '') LIKE ?", ["{$searchTerm}%"])
@@ -100,7 +106,7 @@ class ExecutePromptAction
         return Project::query()
             ->select(['id', 'name', 'path'])
             ->get()
-            ->map(fn ($p) => ['name' => $p->name, 'path' => $p->path])
+            ->map(static fn ($p) => ['name' => $p->name, 'path' => $p->path])
             ->toArray();
     }
 

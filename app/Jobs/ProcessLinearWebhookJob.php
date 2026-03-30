@@ -16,6 +16,8 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
+use function json_encode;
+
 class ProcessLinearWebhookJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable;

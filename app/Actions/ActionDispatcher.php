@@ -2,6 +2,8 @@
 
 namespace App\Actions;
 
+use function array_keys;
+
 class ActionDispatcher
 {
     private array $actionMap = [

@@ -9,6 +9,11 @@ use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Support\Facades\App;
 use JsonException;
 
+use function array_filter;
+use function array_values;
+use function mb_strtolower;
+use function str_contains;
+
 class ListSessionsAction
 {
     /**

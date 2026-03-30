@@ -10,6 +10,9 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\File;
 use JsonException;
 
+use function json_encode;
+use function substr;
+
 readonly class AiProjectManager
 {
     public function __construct(
@@ -239,7 +242,7 @@ readonly class AiProjectManager
 
         return [
             'success' => true,
-            'projects' => $projects->map(fn (Project $p) => [
+            'projects' => $projects->map(static fn (Project $p) => [
                 'id' => $p->id,
                 'name' => $p->name,
                 'path' => $p->path,

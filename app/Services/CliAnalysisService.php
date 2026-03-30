@@ -9,6 +9,13 @@ use App\Models\Project;
 use App\Models\PromptHistory;
 use Illuminate\Support\Facades\Log;
 
+use function base_path;
+use function collect;
+use function json_decode;
+use function json_last_error;
+use function mb_substr;
+use function now;
+
 readonly class CliAnalysisService
 {
     public function __construct(
@@ -114,7 +121,7 @@ readonly class CliAnalysisService
         return Project::query()
             ->where('status', 'active')
             ->get()
-            ->map(fn (Project $p) => [
+            ->map(static fn (Project $p) => [
                 'name' => $p->name,
                 'path' => $p->path,
                 'status' => $p->status->value,
@@ -146,7 +153,7 @@ readonly class CliAnalysisService
     private function buildAnalysisPrompt(string $userMessage, array $projects, ?array $previousContext): string
     {
         $projectsList = collect($projects)
-            ->map(fn ($p) => "- Name: {$p['name']}, Path: {$p['path']}, Status: {$p['status']}")
+            ->map(static fn ($p) => "- Name: {$p['name']}, Path: {$p['path']}, Status: {$p['status']}")
             ->join("\n");
 
         $datetime = now()->toIso8601String();

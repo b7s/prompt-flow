@@ -16,6 +16,17 @@ use Illuminate\Support\Facades\Log;
 use JsonException;
 use Throwable;
 
+use function array_slice;
+use function count;
+use function explode;
+use function implode;
+use function is_string;
+use function json_encode;
+use function str_contains;
+use function strlen;
+use function substr;
+use function trim;
+
 class ProcessWebhookJob implements ShouldBeUnique, ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable;

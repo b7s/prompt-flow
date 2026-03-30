@@ -151,7 +151,7 @@ class ProjectManagerCommand extends Command
         $path = text(
             label: __('prompts.project_path'),
             default: $project->path,
-            validate: fn ($value) => $value && ! is_dir($value) ? 'Directory does not exist.' : null
+            validate: static fn ($value) => $value && ! is_dir($value) ? 'Directory does not exist.' : null
         );
 
         $status = select(
@@ -258,7 +258,7 @@ class ProjectManagerCommand extends Command
 
         table(
             headers: ['ID', 'Name', 'Status', 'Created'],
-            rows: $keys->map(fn (ApiKey $k) => [
+            rows: $keys->map(static fn (ApiKey $k) => [
                 $k->id,
                 $k->name,
                 $k->is_active ? 'Active' : 'Inactive',
@@ -329,9 +329,9 @@ class ProjectManagerCommand extends Command
 
         $id = search(
             label: 'Search for a project',
-            options: fn ($search) => $projects
-                ->filter(fn (Project $p) => str_contains(strtolower($p->name), strtolower($search)))
-                ->mapWithKeys(fn (Project $p) => [$p->id => "{$p->name} ({$p->path})"])
+            options: static fn ($search) => $projects
+                ->filter(static fn (Project $p) => str_contains(strtolower($p->name), strtolower($search)))
+                ->mapWithKeys(static fn (Project $p) => [$p->id => "{$p->name} ({$p->path})"])
                 ->all()
         );
 
@@ -350,9 +350,9 @@ class ProjectManagerCommand extends Command
 
         $id = search(
             label: __('prompts.select_api_key'),
-            options: fn ($search) => $keys
-                ->filter(fn (ApiKey $k) => str_contains(strtolower($k->name), strtolower($search)))
-                ->mapWithKeys(fn (ApiKey $k) => [$k->id => "{$k->name} (".($k->is_active ? 'Active' : 'Inactive').')'])
+            options: static fn ($search) => $keys
+                ->filter(static fn (ApiKey $k) => str_contains(strtolower($k->name), strtolower($search)))
+                ->mapWithKeys(static fn (ApiKey $k) => [$k->id => "{$k->name} (".($k->is_active ? 'Active' : 'Inactive').')'])
                 ->all()
         );
 

@@ -23,7 +23,7 @@ class GetLastPromptAction
 
         $projectPath = $resolved['project_path'];
 
-        $lastPrompt = PromptHistory::whereHas('project', function ($query) use ($projectPath) {
+        $lastPrompt = PromptHistory::whereHas('project', static function ($query) use ($projectPath) {
             $query->where('path', $projectPath);
         })
             ->orderByDesc('created_at')

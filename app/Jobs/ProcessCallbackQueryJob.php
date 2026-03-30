@@ -17,6 +17,9 @@ use JsonException;
 use Telegram\Bot\Laravel\Facades\Telegram;
 use Throwable;
 
+use function json_decode;
+use function mb_substr;
+
 class ProcessCallbackQueryJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable;
@@ -27,6 +30,10 @@ class ProcessCallbackQueryJob implements ShouldQueue
         public int $messageId,
     ) {}
 
+    /**
+     * @throws BindingResolutionException
+     * @throws JsonException
+     */
     public function handle(): void
     {
         try {

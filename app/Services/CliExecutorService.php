@@ -10,6 +10,17 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Process;
 use JsonException;
 
+use function array_filter;
+use function end;
+use function explode;
+use function json_decode;
+use function json_encode;
+use function json_last_error;
+use function preg_replace;
+use function strlen;
+use function substr;
+use function trim;
+
 class CliExecutorService
 {
     private int $timeout;

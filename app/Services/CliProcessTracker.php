@@ -10,6 +10,10 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
+use function implode;
+use function mb_strlen;
+use function mb_substr;
+
 class CliProcessTracker
 {
     private const string CACHE_PREFIX = 'cli_process:';
@@ -308,7 +312,7 @@ class CliProcessTracker
             $query->where('project_path', $projectPath);
         }
 
-        return $query->get()->map(function ($item) {
+        return $query->get()->map(static function ($item) {
             return [
                 'id' => $item->id,
                 'position' => $item->position,
@@ -437,8 +441,8 @@ class CliProcessTracker
         // Group by project_path using Laravel collection (acceptable for small result sets)
         // For larger datasets, consider pagination or cursor
         return $items->groupBy('project_path')
-            ->map(function ($items) {
-                return $items->map(function ($item) {
+            ->map(static function ($items) {
+                return $items->map(static function ($item) {
                     return [
                         'id' => $item->id,
                         'position' => $item->position,

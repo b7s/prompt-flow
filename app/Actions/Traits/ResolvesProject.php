@@ -8,6 +8,10 @@ use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Support\Facades\App;
 use JsonException;
 
+use function preg_replace;
+use function strtolower;
+use function trim;
+
 trait ResolvesProject
 {
     /**
@@ -52,7 +56,7 @@ trait ResolvesProject
 
         $project = Project::query()
             ->select(['id', 'name', 'path'])
-            ->where(function ($query) use ($searchTerm) {
+            ->where(static function ($query) use ($searchTerm) {
                 $query->whereRaw("REPLACE(LOWER(name), ' ', '') LIKE ?", ["%{$searchTerm}%"])
                     ->orWhereRaw("REPLACE(LOWER(path), ' ', '') LIKE ?", ["%{$searchTerm}%"]);
             })

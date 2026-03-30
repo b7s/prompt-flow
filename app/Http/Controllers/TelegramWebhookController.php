@@ -10,6 +10,8 @@ use App\Services\ResponseService;
 use Illuminate\Http\JsonResponse;
 use Telegram\Bot\Laravel\Facades\Telegram;
 
+use function mb_substr;
+
 class TelegramWebhookController
 {
     public function __invoke(

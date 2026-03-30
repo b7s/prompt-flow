@@ -9,6 +9,14 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Telegram\Bot\Laravel\Facades\Telegram;
 
+use function array_map;
+use function array_rand;
+use function bin2hex;
+use function json_encode;
+use function mb_strlen;
+use function mb_substr;
+use function random_bytes;
+
 class ResponseService
 {
     private array $executingMessages;
@@ -243,7 +251,7 @@ class ResponseService
             ];
 
             $chunks = array_chunk($buttons, 2);
-            $keyboard = array_map(fn ($chunk) => $chunk, $chunks);
+            $keyboard = array_map(static fn ($chunk) => $chunk, $chunks);
 
             Telegram::sendMessage([
                 'chat_id' => $chatId,

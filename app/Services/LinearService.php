@@ -7,6 +7,10 @@ use Exception;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
+use function array_map;
+use function collect;
+use function in_array;
+
 class LinearService
 {
     private string $apiKey;
@@ -116,7 +120,7 @@ class LinearService
         $stateTypes = $statusMap[$status] ?? ['todo', 'in_progress', 'in_review'];
 
         return collect($states)
-            ->filter(fn ($state) => in_array($state['type'], $stateTypes, true))
+            ->filter(static fn ($state) => in_array($state['type'], $stateTypes, true))
             ->pluck('id')
             ->toArray();
     }

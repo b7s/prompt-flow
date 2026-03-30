@@ -7,6 +7,9 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
+use function json_decode;
+use function json_last_error;
+
 class NightwatchWebhookController
 {
     /**
