@@ -6,6 +6,7 @@ use App\Services\AiProjectManager;
 use App\Services\CliExecutorService;
 use App\Services\CliProcessTracker;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
@@ -60,6 +61,9 @@ class ProcessCallbackQueryJob implements ShouldQueue
         return null;
     }
 
+    /**
+     * @throws BindingResolutionException
+     */
     private function handleContinueSession(array $data): void
     {
         $sessionId = $data['session_id'] ?? null;
@@ -90,6 +94,10 @@ class ProcessCallbackQueryJob implements ShouldQueue
         }
     }
 
+    /**
+     * @throws BindingResolutionException
+     * @throws JsonException
+     */
     private function handleNewSession(array $data): void
     {
         $prompt = $this->resolvePrompt($data);
@@ -121,6 +129,9 @@ class ProcessCallbackQueryJob implements ShouldQueue
         }
     }
 
+    /**
+     * @throws BindingResolutionException
+     */
     private function handleWait(array $data): void
     {
         $projectPath = $data['project_path'] ?? null;
@@ -142,6 +153,10 @@ class ProcessCallbackQueryJob implements ShouldQueue
         }
     }
 
+    /**
+     * @throws BindingResolutionException
+     * @throws JsonException
+     */
     private function handleCancelNew(array $data): void
     {
         $prompt = $this->resolvePrompt($data);
