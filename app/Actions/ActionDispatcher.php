@@ -37,9 +37,8 @@ class ActionDispatcher
         }
 
         $actionClass = $this->actionMap[$action];
-        $actionInstance = new $actionClass;
 
-        return $actionInstance->execute($params);
+        return (new $actionClass)->execute($params);
     }
 
     public function hasAction(string $action): bool

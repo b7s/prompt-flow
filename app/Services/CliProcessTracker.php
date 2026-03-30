@@ -423,7 +423,7 @@ class CliProcessTracker
 
     /**
      * OPTIMIZATION: Added select() to fetch only needed columns
-     * and used database-level groupBy instead of PHP collection
+     * and used database-level groupBy instead of a PHP collection
      */
     public function getAllPendingQueues(): array
     {

@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\ChannelType;
+use Exception;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -73,7 +74,7 @@ class ResponseService
                 'chat_id' => $chatId,
                 'text' => $message,
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Failed to send Telegram message', [
                 'error' => $e->getMessage(),
                 'chat_id' => $chatId,
@@ -98,7 +99,7 @@ class ResponseService
                 'to' => $phone,
                 'text' => $message,
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Failed to send WhatsApp message', [
                 'error' => $e->getMessage(),
                 'phone' => $phone,
@@ -228,7 +229,7 @@ class ResponseService
                         'session_id' => $session['id'],
                         'prompt_key' => $promptKey,
                         'project_path' => $projectPath,
-                    ]),
+                    ], JSON_THROW_ON_ERROR),
                 ];
             }
 
@@ -238,7 +239,7 @@ class ResponseService
                     'action' => 'new_session',
                     'prompt_key' => $promptKey,
                     'project_path' => $projectPath,
-                ]),
+                ], JSON_THROW_ON_ERROR),
             ];
 
             $chunks = array_chunk($buttons, 2);
@@ -249,9 +250,9 @@ class ResponseService
                 'text' => $message,
                 'reply_markup' => json_encode([
                     'inline_keyboard' => $keyboard,
-                ]),
+                ], JSON_THROW_ON_ERROR),
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Failed to send Telegram inline buttons', [
                 'error' => $e->getMessage(),
                 'chat_id' => $chatId,
@@ -290,16 +291,16 @@ class ResponseService
                 'reply_markup' => json_encode([
                     'inline_keyboard' => [
                         [
-                            ['text' => '1. Wait', 'callback_data' => json_encode(['action' => 'wait', 'project_path' => $projectPath])],
-                            ['text' => '2. Cancel & New', 'callback_data' => json_encode(['action' => 'cancel_new', 'project_path' => $projectPath, 'prompt_key' => $promptKey])],
+                            ['text' => '1. Wait', 'callback_data' => json_encode(['action' => 'wait', 'project_path' => $projectPath], JSON_THROW_ON_ERROR)],
+                            ['text' => '2. Cancel & New', 'callback_data' => json_encode(['action' => 'cancel_new', 'project_path' => $projectPath, 'prompt_key' => $promptKey], JSON_THROW_ON_ERROR)],
                         ],
                         [
-                            ['text' => '3. New Session', 'callback_data' => json_encode(['action' => 'new_session', 'project_path' => $projectPath, 'prompt_key' => $promptKey])],
+                            ['text' => '3. New Session', 'callback_data' => json_encode(['action' => 'new_session', 'project_path' => $projectPath, 'prompt_key' => $promptKey], JSON_THROW_ON_ERROR)],
                         ],
                     ],
-                ]),
+                ], JSON_THROW_ON_ERROR),
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Failed to send Telegram running options', [
                 'error' => $e->getMessage(),
                 'chat_id' => $chatId,

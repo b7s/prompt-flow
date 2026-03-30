@@ -228,6 +228,9 @@ class CliExecutorService
         ];
     }
 
+    /**
+     * @throws JsonException
+     */
     private function extractCommandOutput(string $output): string
     {
         $lines = array_filter(explode("\n", trim($output)));
@@ -241,21 +244,21 @@ class CliExecutorService
                 continue;
             }
 
-            $json = json_decode($line, true);
+            $json = json_decode($line, true, 512, JSON_THROW_ON_ERROR);
             if (json_last_error() !== JSON_ERROR_NONE) {
                 continue;
             }
 
-            if (isset($json['type']) && $json['type'] === 'text' && isset($json['part']['text'])) {
+            if (isset($json['type'], $json['part']['text']) && $json['type'] === 'text') {
                 $texts[] = $json['part']['text'];
-            } elseif (isset($json['type']) && $json['type'] === 'result' && isset($json['result'])) {
+            } elseif (isset($json['type'], $json['result']) && $json['type'] === 'result') {
                 return $this->formatOutput($json['result']);
             } elseif (isset($json['type']) && $json['type'] === 'tool_result') {
                 $content = $json['content'] ?? $json['part']['content'] ?? '';
                 if ($content) {
-                    $toolResults[] = is_string($content) ? $content : json_encode($content);
+                    $toolResults[] = is_string($content) ? $content : json_encode($content, JSON_THROW_ON_ERROR);
                 }
-            } elseif (isset($json['type']) && $json['type'] === 'message_output' && isset($json['part']['text'])) {
+            } elseif (isset($json['type'], $json['part']['text']) && $json['type'] === 'message_output') {
                 $texts[] = $json['part']['text'];
             } elseif (isset($json['part']['error_output']) && $json['part']['error_output']) {
                 $texts[] = 'Tool error: '.$json['part']['error_output'];
@@ -290,6 +293,9 @@ class CliExecutorService
         return $output;
     }
 
+    /**
+     * @throws JsonException
+     */
     private function extractJson(string $output): ?array
     {
         $output = $this->stripMarkdown($output);
@@ -302,7 +308,7 @@ class CliExecutorService
                 continue;
             }
 
-            $json = json_decode($line, true);
+            $json = json_decode($line, true, 512, JSON_THROW_ON_ERROR);
             if (json_last_error() !== JSON_ERROR_NONE) {
                 continue;
             }
@@ -311,18 +317,18 @@ class CliExecutorService
                 return $json;
             }
 
-            if (isset($json['type']) && $json['type'] === 'text' && isset($json['part']['text'])) {
+            if (isset($json['type'], $json['part']['text']) && $json['type'] === 'text') {
                 $innerText = $json['part']['text'];
                 $innerText = $this->stripMarkdown($innerText);
-                $innerJson = json_decode($innerText, true);
-                if (json_last_error() === JSON_ERROR_NONE && is_array($innerJson) && isset($innerJson['action'])) {
+                $innerJson = json_decode($innerText, true, 512, JSON_THROW_ON_ERROR);
+                if (is_array($innerJson) && isset($innerJson['action']) && json_last_error() === JSON_ERROR_NONE) {
                     return $innerJson;
                 }
             }
         }
 
-        $fullJson = json_decode($output, true);
-        if (json_last_error() === JSON_ERROR_NONE && is_array($fullJson) && isset($fullJson['action'])) {
+        $fullJson = json_decode($output, true, 512, JSON_THROW_ON_ERROR);
+        if (is_array($fullJson) && isset($fullJson['action']) && json_last_error() === JSON_ERROR_NONE) {
             return $fullJson;
         }
 
@@ -333,8 +339,6 @@ class CliExecutorService
     {
         $text = preg_replace('/^```json\s*/', '', $text);
         $text = preg_replace('/^```\s*/', '', $text);
-        $text = preg_replace('/\s*```$/', '', $text);
-
-        return $text;
+        return preg_replace('/\s*```$/', '', $text);
     }
 }
