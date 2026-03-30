@@ -96,8 +96,6 @@ class ExecuteLinearIssueAction
             ];
         }
 
-        $manager = App::make(AiProjectManager::class);
-
-        return $manager->executePrompt($projectPath, $fullPrompt);
+        return App::make(AiProjectManager::class)->executePrompt($projectPath, $fullPrompt);
     }
 }

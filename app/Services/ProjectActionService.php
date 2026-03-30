@@ -57,7 +57,7 @@ readonly class ProjectActionService
         $name = $params['name'] ?? null;
         $path = $params['path'] ?? null;
         $description = $params['description'] ?? null;
-        $cliPreference = $params['cli_preference'] ?? 'opencode';
+        $cliPreference = $params['cli_preference'] ?? CliType::default()->value;
 
         if (! $name || ! $path) {
             return [
@@ -259,7 +259,7 @@ readonly class ProjectActionService
             if ($result['success']) {
                 $output = is_string($result['output'])
                     ? $result['output']
-                    : json_encode($result['output']);
+                    : json_encode($result['output'], JSON_THROW_ON_ERROR);
 
                 return [
                     'success' => true,
@@ -292,7 +292,7 @@ I can help you with:
 • **Execute command** - "run [command] in project at [path]"
 
 Examples:
-- "add myproject at /home/user/myproject"
+- "add some-project at /home/user/some-project"
 - "list my projects"
 - "search for laravel"
 HELP,

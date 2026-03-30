@@ -32,8 +32,6 @@ class ContinueHistoryAction
             ];
         }
 
-        $manager = App::make(AiProjectManager::class);
-
-        return $manager->continueFromHistory($historyId, $newPrompt);
+        return App::make(AiProjectManager::class)->continueFromHistory($historyId, $newPrompt);
     }
 }

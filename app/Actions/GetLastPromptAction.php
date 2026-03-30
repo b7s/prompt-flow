@@ -2,42 +2,26 @@
 
 namespace App\Actions;
 
-use App\Models\Project;
+use App\Actions\Traits\ResolvesProject;
 use App\Models\PromptHistory;
 use JsonException;
 
 class GetLastPromptAction
 {
+    use ResolvesProject;
+
     /**
      * @throws JsonException
      */
     public function execute(array $params): array
     {
-        $projectPath = $params['project_path'] ?? null;
-        $projectName = $params['project_name'] ?? null;
+        $resolved = $this->resolveProjectPath($params);
 
-        if (! $projectPath && ! $projectName) {
-            return [
-                'success' => false,
-                'error' => 'Either project_path or project_name is required',
-            ];
+        if (! $resolved['success']) {
+            return $resolved;
         }
 
-        if (! $projectPath && $projectName) {
-            $project = Project::query()
-                ->where('name', 'like', "%{$projectName}%")
-                ->orWhere('path', 'like', "%{$projectName}%")
-                ->first();
-
-            if (! $project) {
-                return [
-                    'success' => false,
-                    'error' => "Project not found: {$projectName}",
-                ];
-            }
-
-            $projectPath = $project->path;
-        }
+        $projectPath = $resolved['project_path'];
 
         $lastPrompt = PromptHistory::whereHas('project', function ($query) use ($projectPath) {
             $query->where('path', $projectPath);

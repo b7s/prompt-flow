@@ -30,6 +30,8 @@ class ExecutePromptAction
         $projectName = $params['project_name'] ?? null;
         $prompt = $params['prompt'] ?? '';
         $sessionId = $params['session_id'] ?? null;
+        $hasPreviousSession = $params['has_previous_session'] ?? false;
+        $previousContext = $params['previous_context'] ?? null;
 
         if ($prompt === '') {
             return [
@@ -70,7 +72,10 @@ class ExecutePromptAction
             ];
         }
 
-        return $this->handleExecution($projectPath, $prompt, $sessionId, $channel, $chatId);
+        return $this->handleExecution($projectPath, $prompt, $sessionId, $channel, $chatId, [
+            'session_id' => $previousContext['session_id'] ?? null,
+            'previous_prompt' => $previousContext['previous_prompt'] ?? null,
+        ]);
     }
 
     private function resolveProjectPath(string $projectName): ?string
@@ -100,14 +105,15 @@ class ExecutePromptAction
     }
 
     /**
-     * @throws BindingResolutionException
+     * @throws BindingResolutionException|JsonException
      */
     private function handleExecution(
         string $projectPath,
         string $prompt,
         ?string $sessionId,
         ?ChannelType $channel,
-        mixed $chatId
+        mixed $chatId,
+        array $previousContext = []
     ): array {
         $processTracker = App::make(CliProcessTracker::class);
         $manager = App::make(AiProjectManager::class);
@@ -117,11 +123,29 @@ class ExecutePromptAction
             try {
                 $responseService->sendExecutingMessage($channel, $chatId);
             } catch (Throwable) {
-                // Silently handle
             }
         }
 
-        if ($sessionId && $processTracker->isRunning($sessionId)) {
+        if ($sessionId) {
+            $processTracker->track($sessionId, $projectPath, $prompt);
+            $cliExecutor = App::make(CliExecutorService::class);
+            $result = $cliExecutor->executeOnSession($sessionId, $prompt, $projectPath);
+            $this->handleResult($result, $sessionId, $projectPath, $channel, $chatId);
+
+            return $result;
+        }
+
+        if ($previousContext && ! empty($previousContext['session_id'])) {
+            $existingSessionId = $previousContext['session_id'];
+            $processTracker->track($existingSessionId, $projectPath, $prompt);
+            $cliExecutor = App::make(CliExecutorService::class);
+            $result = $cliExecutor->executeOnSession($existingSessionId, $prompt, $projectPath);
+            $this->handleResult($result, $existingSessionId, $projectPath, $channel, $chatId);
+
+            return $result;
+        }
+
+        if ($processTracker->isRunningForProject($projectPath)) {
             $processTracker->track($sessionId, $projectPath, $prompt);
             $cliExecutor = App::make(CliExecutorService::class);
             $result = $cliExecutor->executeOnSession($sessionId, $prompt, $projectPath);
@@ -166,7 +190,7 @@ class ExecutePromptAction
     }
 
     /**
-     * @throws BindingResolutionException
+     * @throws BindingResolutionException|Throwable
      */
     private function handleResult(
         array $result,
@@ -203,6 +227,7 @@ class ExecutePromptAction
 
     /**
      * @throws BindingResolutionException
+     * @throws Throwable
      */
     private function processQueueItems(
         CliProcessTracker $processTracker,
@@ -251,7 +276,7 @@ class ExecutePromptAction
     {
         $normalizedPrompt = $this->normalizePrompt($prompt);
 
-        $recentHistory = PromptHistory::whereHas('project', function ($query) use ($projectPath) {
+        $recentHistory = PromptHistory::whereHas('project', static function ($query) use ($projectPath) {
             $query->where('path', $projectPath);
         })
             ->where('user_prompt', 'like', "%{$normalizedPrompt}%")

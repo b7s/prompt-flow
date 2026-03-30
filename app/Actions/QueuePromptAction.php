@@ -2,7 +2,7 @@
 
 namespace App\Actions;
 
-use App\Models\Project;
+use App\Actions\Traits\ResolvesProject;
 use App\Services\AiExecutionContext;
 use App\Services\CliProcessTracker;
 use Illuminate\Contracts\Container\BindingResolutionException;
@@ -11,14 +11,14 @@ use JsonException;
 
 class QueuePromptAction
 {
+    use ResolvesProject;
+
     /**
      * @throws BindingResolutionException
      * @throws JsonException
      */
     public function execute(array $params): array
     {
-        $projectPath = $params['project_path'] ?? null;
-        $projectName = $params['project_name'] ?? null;
         $prompt = $params['prompt'] ?? '';
         $sessionId = $params['session_id'] ?? null;
 
@@ -29,35 +29,18 @@ class QueuePromptAction
             ];
         }
 
-        if (! $projectPath && ! $projectName) {
-            return [
-                'success' => false,
-                'error' => 'Either project_path or project_name is required',
-            ];
+        $resolved = $this->resolveProjectPath($params);
+
+        if (! $resolved['success']) {
+            return $resolved;
         }
 
-        if (! $projectPath && $projectName) {
-            $project = Project::query()
-                ->where('name', 'like', "%{$projectName}%")
-                ->orWhere('path', 'like', "%{$projectName}%")
-                ->first();
-
-            if (! $project) {
-                return [
-                    'success' => false,
-                    'error' => "Project not found: {$projectName}",
-                ];
-            }
-
-            $projectPath = $project->path;
-        }
+        $projectPath = $resolved['project_path'];
 
         $channel = AiExecutionContext::getChannel();
         $chatId = AiExecutionContext::getChatId();
 
-        $processTracker = App::make(CliProcessTracker::class);
-
-        return $processTracker->queue(
+        return App::make(CliProcessTracker::class)->queue(
             $projectPath,
             $prompt,
             $sessionId,

@@ -24,8 +24,6 @@ class CancelQueueAction
             ];
         }
 
-        $processTracker = App::make(CliProcessTracker::class);
-
-        return $processTracker->cancel($queueId);
+        return App::make(CliProcessTracker::class)->cancel($queueId);
     }
 }

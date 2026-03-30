@@ -34,8 +34,6 @@ class AddProjectAction
             'cli_preference' => $cliPreference,
         ];
 
-        $manager = App::make(AiProjectManager::class);
-
-        return $manager->addProject($data);
+        return App::make(AiProjectManager::class)->addProject($data);
     }
 }

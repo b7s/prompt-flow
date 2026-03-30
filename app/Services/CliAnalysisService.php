@@ -6,6 +6,7 @@ use App\Actions\ActionDispatcher;
 use App\Enums\ChannelType;
 use App\Enums\CliType;
 use App\Models\Project;
+use App\Models\PromptHistory;
 use Illuminate\Support\Facades\Log;
 
 readonly class CliAnalysisService
@@ -24,7 +25,7 @@ readonly class CliAnalysisService
         try {
             $projects = $this->getActiveProjectsList();
 
-            $prompt = $this->buildAnalysisPrompt($userMessage, $projects);
+            $prompt = $this->buildAnalysisPrompt($userMessage, $projects, null);
 
             Log::info('CLI Analysis Request', [
                 'message' => $userMessage,
@@ -46,7 +47,7 @@ readonly class CliAnalysisService
 
             $cliResponse = is_array($cliResult['output'])
                 ? $cliResult['output']
-                : json_decode($cliResult['output'], true);
+                : json_decode($cliResult['output'], true, 512, JSON_THROW_ON_ERROR);
 
             if (json_last_error() !== JSON_ERROR_NONE) {
                 Log::warning('CLI response not valid JSON', [
@@ -71,6 +72,29 @@ readonly class CliAnalysisService
                     'available_projects' => $cliResponse['available_projects'] ?? [],
                     'message' => 'Please specify which project you mean.',
                 ];
+            }
+
+            if (isset($cliResponse['action']) && $cliResponse['action'] === 'execute_prompt') {
+                $params = $cliResponse['params'] ?? [];
+                $projectPath = $params['project_path'] ?? null;
+
+                if ($projectPath) {
+                    $previousContext = $this->getPreviousContext($projectPath);
+
+                    if ($previousContext) {
+                        $cliResponseWithContext = $cliResponse;
+                        $cliResponseWithContext['params']['previous_context'] = $previousContext;
+                        $cliResponseWithContext['params']['has_previous_session'] = ! empty($previousContext['session_id']);
+
+                        $actionResult = $this->actionDispatcher->dispatch($cliResponseWithContext);
+
+                        return [
+                            'success' => $actionResult['success'] ?? true,
+                            'action' => 'cli_response',
+                            'result' => $actionResult,
+                        ];
+                    }
+                }
             }
 
             $actionResult = $this->actionDispatcher->dispatch($cliResponse);
@@ -98,7 +122,28 @@ readonly class CliAnalysisService
             ->toArray();
     }
 
-    private function buildAnalysisPrompt(string $userMessage, array $projects): string
+    private function getPreviousContext(string $projectPath): ?array
+    {
+        $lastHistory = PromptHistory::whereHas('project', static function ($query) use ($projectPath) {
+            $query->where('path', $projectPath);
+        })
+            ->where('created_at', '>', now()->subMinutes(30))
+            ->orderByDesc('created_at')
+            ->first();
+
+        if (! $lastHistory || ! $lastHistory->session_id) {
+            return null;
+        }
+
+        return [
+            'session_id' => $lastHistory->session_id,
+            'previous_prompt' => $lastHistory->user_prompt,
+            'previous_response_preview' => mb_substr($lastHistory->ai_response, 0, 500),
+            'timestamp' => $lastHistory->created_at->toIso8601String(),
+        ];
+    }
+
+    private function buildAnalysisPrompt(string $userMessage, array $projects, ?array $previousContext): string
     {
         $projectsList = collect($projects)
             ->map(fn ($p) => "- Name: {$p['name']}, Path: {$p['path']}, Status: {$p['status']}")
@@ -106,11 +151,24 @@ readonly class CliAnalysisService
 
         $datetime = now()->toIso8601String();
 
+        $previousContextSection = '';
+        if ($previousContext) {
+            $previousContextSection = <<<CONTEXT
+
+Previous Session Context (for this project):
+- Session ID: {$previousContext['session_id']}
+- Last prompt: {$previousContext['previous_prompt']}
+- Last response preview: {$previousContext['previous_response_preview']}
+- Timestamp: {$previousContext['timestamp']}
+
+CONTEXT;
+        }
+
         return <<<PROMPT
 ANALYZE_USER_REQUEST
 
 User Message: "{$userMessage}"
-
+{$previousContextSection}
 Available Projects:
 {$projectsList}
 
@@ -141,11 +199,19 @@ Project Matching Rules:
 - "fluent" → FluentVox
 - Fuzzy match: remove spaces and lowercase for matching
 
+Session Handling Rules:
+- If there is a previous session and the new request is RELATED to that topic, include "session_id" in params to continue the conversation
+- Only create a NEW session (don't include session_id) if:
+  - User explicitly asks for a new session (e.g., "start fresh", "new conversation", "forget previous")
+  - The request is COMPLETELY unrelated to the previous topic
+  - The previous session is too old (more than 30 minutes)
+- Related means: continuing the same task, building upon previous changes, fixing issues from previous work, same feature/module
+
 For execute_prompt, include:
 - project_name (matched from user's input)
 - project_path (resolved from project_name)
 - prompt (the actual command/task)
-- session_id (if user wants to continue existing session)
+- session_id (ONLY if related to previous session, otherwise omit to create new session)
 
 IMPORTANT: Format user_message as plain text with emojis and line breaks. Max 500 characters.
 NO markdown formatting (no **bold**, no *italic*, no ```code blocks```, no ### headers).
