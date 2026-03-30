@@ -9,10 +9,14 @@ enum CliType: string
 
     public function executable(): string
     {
-        return match ($this) {
+        $cliName = match ($this) {
             self::OpenCode => 'opencode',
             self::ClaudeCode => 'claude',
         };
+
+        $fullPath = shell_exec("which {$cliName}");
+
+        return trim($fullPath ?: $cliName);
     }
 
     public function label(): string
@@ -40,7 +44,7 @@ enum CliType: string
     {
         return match ($this) {
             self::OpenCode => [
-                'opencode',
+                $this->executable(),
                 'run',
                 $prompt,
                 '--model', config('prompt-flow.ai.provider').'/'.config('prompt-flow.ai.model'),
@@ -48,7 +52,7 @@ enum CliType: string
                 '--dir', $projectPath,
             ],
             self::ClaudeCode => [
-                'claude',
+                $this->executable(),
                 '-p',
                 '--model', config('prompt-flow.ai.model'),
                 '--output-format', 'json',

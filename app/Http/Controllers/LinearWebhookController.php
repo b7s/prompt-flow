@@ -15,7 +15,7 @@ class LinearWebhookController
         if (! config()->boolean('prompt-flow.linear.enabled', false)) {
             return response()->json([
                 'status' => 'ignored',
-                'message' => '[LINEAR] ' . __('messages.webhook.disabled'),
+                'message' => '[LINEAR] '.__('messages.webhook.disabled'),
             ], 400);
         }
 

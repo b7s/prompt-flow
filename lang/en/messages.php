@@ -5,7 +5,7 @@ return [
     'executing' => [
         'Let me analyze that for you...',
         'Working on it...',
-        'Processing your request...',
+        'Just a moment...',
         'Give me a moment to work on this...',
         'I\'m on it...',
         'Let me check that for you...',

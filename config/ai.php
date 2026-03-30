@@ -20,7 +20,7 @@ return [
     'default_for_embeddings' => 'openai',
     'default_for_reranking' => 'cohere',
 
-    # Custom configured model
+    // Custom-configured model
     'internal_model' => env('AI_INTERNAL_MODEL', 'claude-sonnet-4-6'),
 
     /*

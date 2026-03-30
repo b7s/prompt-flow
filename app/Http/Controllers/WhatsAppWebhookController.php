@@ -14,7 +14,7 @@ class WhatsAppWebhookController
         if (! config()->boolean('prompt-flow.channels.whatsapp.enabled', false)) {
             return response()->json([
                 'status' => 'ignored',
-                'message' => '[WHATSAPP] ' . __('messages.webhook.disabled'),
+                'message' => '[WHATSAPP] '.__('messages.webhook.disabled'),
             ], 400);
         }
 
@@ -28,6 +28,23 @@ class WhatsAppWebhookController
                 'error' => 'Invalid payload',
             ], 400);
         }
+
+        $cacheKey = "whatsapp_dedup_{$chatId}";
+        if (cache()->has($cacheKey)) {
+            $completedKey = "whatsapp_completed_{$chatId}";
+            if (cache()->has($completedKey)) {
+                return response()->json([
+                    'status' => 'already_completed',
+                    'message' => 'Message already processed and completed',
+                ], 200);
+            }
+
+            return response()->json([
+                'status' => 'duplicate',
+                'message' => 'Message already being processed',
+            ], 200);
+        }
+        cache()->put($cacheKey, true, now()->addHours(24));
 
         ProcessWebhookJob::dispatch(
             message: $message,

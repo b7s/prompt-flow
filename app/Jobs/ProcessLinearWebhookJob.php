@@ -5,7 +5,7 @@ namespace App\Jobs;
 use App\Enums\ChannelType;
 use App\Enums\CliType;
 use App\Enums\LinearStatus;
-use App\Services\AiContextService;
+use App\Services\CliAnalysisService;
 use App\Services\LinearService;
 use App\Services\ProjectActionService;
 use App\Services\ResponseService;
@@ -28,7 +28,7 @@ class ProcessLinearWebhookJob implements ShouldQueue
 
     public function handle(
         LinearService $linearService,
-        AiContextService $aiContextService,
+        CliAnalysisService $cliAnalysisService,
         ProjectActionService $projectActionService,
         ResponseService $responseService,
     ): void {
@@ -46,21 +46,35 @@ class ProcessLinearWebhookJob implements ShouldQueue
         }
 
         try {
-            $aiResult = $aiContextService->analyze($aiMessage, ChannelType::Web, null);
+            $cliResult = $cliAnalysisService->analyze($aiMessage, ChannelType::Web, null);
 
-            if ($aiResult['action'] === 'ai_response') {
+            if ($cliResult['action'] === 'cli_response') {
+                $result = $cliResult['result'] ?? [];
+                $message = $this->formatResponse($result);
                 $this->completeWithFailure(
                     $linearService,
                     $responseService,
                     $telegramChatId,
                     $telegramEnabled,
-                    $aiResult['message']
+                    $message
                 );
 
                 return;
             }
 
-            $result = $projectActionService->execute($aiResult, CliType::default());
+            if (isset($cliResult['error'])) {
+                $this->completeWithFailure(
+                    $linearService,
+                    $responseService,
+                    $telegramChatId,
+                    $telegramEnabled,
+                    $cliResult['error']
+                );
+
+                return;
+            }
+
+            $result = $projectActionService->execute($cliResult, CliType::default());
 
             if ($result['success']) {
                 $this->completeWithSuccess(
@@ -93,6 +107,23 @@ class ProcessLinearWebhookJob implements ShouldQueue
                 $e->getMessage()
             );
         }
+    }
+
+    private function formatResponse(array $result): string
+    {
+        if (! empty($result['user_message'])) {
+            return $result['user_message'];
+        }
+
+        if (! empty($result['message'])) {
+            return $result['message'];
+        }
+
+        if (isset($result['success']) && $result['success'] === false) {
+            return $result['error'] ?? 'An error occurred';
+        }
+
+        return json_encode($result, JSON_PRETTY_PRINT);
     }
 
     private function completeWithSuccess(

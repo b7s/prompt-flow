@@ -7,9 +7,14 @@ return [
 
     'default_cli' => env('DEFAULT_CLI', 'opencode'),
 
+    'cli' => [
+        'timeout' => (int) env('CLI_TIMEOUT', 300),
+        'kill_after_timeout' => filter_var(env('CLI_KILL_AFTER_TIMEOUT', false), FILTER_VALIDATE_BOOLEAN),
+    ],
+
     'ai' => [
-        'provider' => env('AI_FLOW_PROVIDER', 'anthropic'),
-        'model' => env('AI_FLOW_MODEL', 'claude-sonnet-4-6'),
+        'provider' => env('AI_FLOW_PROVIDER', 'opencode'),
+        'model' => env('AI_FLOW_MODEL', 'minimax-m2.5-free'),
     ],
 
     'channels' => [

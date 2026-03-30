@@ -15,8 +15,8 @@ A powerful Laravel-based system for managing programming projects through AI-pow
 
 ## Features
 
-### 🤖 AI-Powered Context Analysis
-Automatically identifies which project you're referring to by analyzing your message against registered projects. The AI understands project names, descriptions, and paths to determine intent.
+### 🤖 CLI-Powered Intent Analysis
+Automatically identifies which project you're referring to by analyzing your message against registered projects. A CLI tool analyzes the input and returns structured JSON to determine intent and route to the appropriate Action.
 
 ```bash
 # Add a project
@@ -66,22 +66,16 @@ This will:
 
 ### 4. Start server:
 
-```bash
-php artisan serve
-```
+If you want to quickly show your application to use on Telegram/API
 
----
-
-## Expose your application externally
-
-### If you want to quickly show your application to use on Telegram/API
-
-#### To run Local, you need to run your app:
+**To run Local, you need to run your app:**
 
 ```bash
 php artisan serve
 ```
 Copy the IP address and port and use it in one of the following services above.
+
+> [Learn here](docs/create-php-server.md) how to create a server that will always keep the service online, even when you restart your computer.
 
 ### Access out of your local machine:
 
@@ -283,8 +277,8 @@ Automate your Linear workflow with AI-powered issue processing:
 
 **What happens:**
 - When a new issue is created/updated in Linear, the system receives the webhook
-- AI analyzes the issue title and description to determine what action to take
-- The AI executes the task on the linked project using the configured CLI
+- CLI-based analysis determines what action to take
+- The CLI executes the task on the linked project
 - On completion, the system:
   - Updates the issue status to "Done"
   - Adds a comment with the result
@@ -308,7 +302,7 @@ Automate exception handling with AI-powered processing via Laravel Nightwatch:
 **What happens:**
 - When a new exception is detected (`issue.opened` with type=`exception`), the system:
   - Sends a Telegram notification (if configured)
-  - Analyzes the exception with AI
+  - Analyzes the exception with CLI
   - Executes a fix on the linked project using the configured CLI
   - Sends completion/error notification
 - Performance issues (`slow-route`, `slow-job`, `slow-command`, `slow-scheduled-task`) only send Telegram notifications without CLI dispatch
@@ -342,6 +336,7 @@ The system automatically continues in the same CLI session when possible, mainta
 | `DEFAULT_CLI` | Default CLI tool to use | No | `opencode` or `claudecode` |
 | `AI_FLOW_PROVIDER` | AI provider | No | `anthropic`, `openai`, `ollama` |
 | `AI_FLOW_MODEL` | AI model to use | No | `claude-sonnet-4-6` |
+| `AI_FLOW_API_KEY` | AI API key (if not using default provider key) | No | `sk-ant-...` |
 | `TELEGRAM_BOT_TOKEN` | Telegram bot token from @BotFather | No | `123456789:ABC-DEF...` |
 | `TELEGRAM_CHAT_ID` | Telegram chat ID or channel username | No | `@yourBotUsername` |
 | `TELEGRAM_ENABLED` | Enable Telegram integration | No | `true` |
@@ -360,11 +355,9 @@ The system automatically continues in the same CLI session when possible, mainta
 > **Note:** `APP_EXTERNAL_URL` is required for Telegram, Linear, etc., webhooks to work.
 > Can be the same as `APP_URL` if you're running on the same server.
 
-### AI Providers
+### AI Providers (for CLI Tool Execution)
 
-The system supports multiple AI providers through Laravel AI SDK:
-
-**Channel Configuration: `.env`**:
+The AI is used by the CLI tool (OpenCode/Claude Code) for executing tasks, not for decision making. The AI provider configuration is passed to the CLI tool:
 
 | Provider | Environment Variable | Model |
 |----------|---------------------|-------|
@@ -372,6 +365,8 @@ The system supports multiple AI providers through Laravel AI SDK:
 | OpenAI | `AI_FLOW_PROVIDER=openai` | `gpt-5` |
 | Ollama | `AI_FLOW_PROVIDER=ollama` | `llama3` |
 | Gemini | `AI_FLOW_PROVIDER=gemini` | `gemini-3` |
+
+The system uses CLI-based intent analysis - the CLI tool analyzes user input and returns structured JSON that routes to the appropriate Action class.
 
 ---
 
@@ -387,11 +382,31 @@ php artisan test --compact
 
 ## Architecture Highlights
 
+### Action Pattern
+The system uses a command-style Action pattern for handling user requests:
+
+```
+User Message → CLI Analysis (JSON) → ActionDispatcher → Action Classes → Response
+```
+
+- **ActionDispatcher** — Routes requests to appropriate Action class based on CLI analysis
+- **Action Classes** — 16+ specialized actions in `app/Actions/`:
+  - `ExecutePromptAction` — Executes AI prompts on projects
+  - `ListProjectsAction` — Lists all projects
+  - `AddProjectAction` — Adds a new project
+  - `RemoveProjectAction` — Removes a project
+  - `EditProjectAction` — Edits project details
+  - `ShowHistoryAction` — Shows prompt history
+  - `ContinueHistoryAction` — Continues from history
+  - `SelectProjectAction` — Selects active project
+  - `ListSessionsAction` — Lists CLI sessions
+  - And more...
+
 ### Service-Oriented Design
 All business logic is encapsulated in services:
 - **ProjectService** — Project CRUD operations
 - **ApiKeyService** — API key generation and validation
-- **AiContextService** — AI context analysis
+- **CliAnalysisService** — CLI-based intent analysis (returns JSON)
 - **CliExecutorService** — CLI command execution
 - **ResponseService** — Bot response handling
 
@@ -401,6 +416,7 @@ Webhook jobs are dispatched to the queue, allowing:
 - Background CLI execution
 - Retry on failure
 - Scalability
+- **Deduplication** — 24-hour cache prevents duplicate processing from webhook retries
 
 ---
 
@@ -416,83 +432,78 @@ Webhook jobs are dispatched to the queue, allowing:
 └───────┬────────┴───────┬────────┴───────┬────────┴─────┬──────┴─────┬──────┘
         │                │                │              │            │
         └────────────────┴────────────────┴──────────────┴────────────┘
-                                       │
-                                       ▼
-                     ┌─────────────────────────────────┐
-                     │         Webhook Endpoint        │
-                     │          /api/webhook/*         │
-                     │       (Bearer Token Auth)       │
-                     └─────────────────┬───────────────┘
-                                       │
-                                       ▼
-                     ┌─────────────────────────────────┐
-                     │      Queue-Based Processing     │
-                     │    (Instant Response + Async)   │
-                     └─────────────────┬───────────────┘
-                                       │
-                                       ▼
-                     ┌─────────────────────────────────┐
-                     │     AI Context Analysis         │
-                     │  • Identifies target project    │
-                     │  • Understands user intent     │
-                     │  • Analyzes message context     │
-                     └─────────────────┬───────────────┘
-                                       │
-                                       ▼
-                     ┌─────────────────────────────────┐
-                     │        Project Database         │
-                     │   ┌─────────────────────────┐   │
-                     │   │ • Name & Path           │   │
-                     │   │ • Type (Laravel, etc.)  │   │
-                     │   │ • CLI Preference        │   │
-                     │   │ • Status                │   │
-                     │   └─────────────────────────┘   │
-                     └─────────────────┬───────────────┘
-                                       │
-                                       ▼
-               ┌───────────────────────────────────────────────┐
-               │            CLI Executor Service               │
-               │  Selects: OpenCode ◄──► Claude Code          │
-               │  Priority: Project → Default → Context        │
-               └───────────────────────┬───────────────────────┘
-                                       │
-                                       ▼
-                     ┌─────────────────────────────────┐
-                     │      AI Prompt Execution        │
-                     │   • Executes task on project    │
-                     │   • Records to history          │
-                     │   • Maintains session context   │
-                     └─────────────────┬───────────────┘
-                                       │
-                                       ▼
-                     ┌────────────────────────────────────┐
-                     │         Response Service           │
-                     │   • Formats result                 │
-                     │   • Sends to origin channel        │
-                     │   • Updates Linear (if applicable) │
-                     └────────────────────────────────────┘
-                                       │
-         ┌─────────────────────────────┼─────────────────────────────┐
-         │                             │                             │
-         ▼                             ▼                             ▼
- ┌───────────────┐          ┌───────────────────┐          ┌─────────────────┐
- │   Telegram    │          │    WhatsApp       │          │     Linear      │
- │   Response    │          │    Response       │          │  • Status: Done │
- │               │          │                   │          │  • Comment      │
- │               │          │                   │          │  • Reaction ✅  │
- └───────────────┘          └───────────────────┘          └─────────────────┘
+                                        │
+                                        ▼
+                      ┌─────────────────────────────────┐
+                      │         Webhook Endpoint        │
+                      │          /api/webhook/*         │
+                      │       (Bearer Token Auth)       │
+                      └─────────────────┬───────────────┘
+                                        │
+                                        ▼
+                      ┌─────────────────────────────────┐
+                      │      Queue-Based Processing     │
+                      │    (Instant Response + Async)   │
+                      │    + Deduplication (24h cache)  │
+                      └─────────────────┬───────────────┘
+                                        │
+                                        ▼
+                      ┌─────────────────────────────────┐
+                      │     CLI Analysis (NDJSON)       │
+                      │  • Identifies target project    │
+                      │  • Determines user intent       │
+                      │  • Returns structured JSON       │
+                      └─────────────────┬───────────────┘
+                                        │
+                                        ▼
+                      ┌─────────────────────────────────┐
+                      │        Action Dispatcher        │
+                      │   Routes to appropriate Action  │
+                      └─────────────────┬───────────────┘
+                                        │
+                                        ▼
+                      ┌─────────────────────────────────┐
+                      │        Action Classes           │
+                      │   ┌─────────────────────────┐   │
+                      │   │ • ExecutePromptAction   │   │
+                      │   │ • ListProjectsAction   │   │
+                      │   │ • AddProjectAction     │   │
+                      │   │ • ShowHistoryAction   │   │
+                      │   │ • ContinueHistoryAction│   │
+                      │   │ • ...and more          │   │
+                      │   └─────────────────────────┘   │
+                      └─────────────────┬───────────────┘
+                                        │
+                                        ▼
+                      ┌────────────────────────────────────┐
+                      │         Response Service           │
+                      │   • Formats result                 │
+                      │   • Sends to origin channel        │
+                      │   • Updates Linear (if applicable) │
+                      └────────────────────────────────────┘
+                                        │
+          ┌─────────────────────────────┼─────────────────────────────┐
+          │                             │                             │
+          ▼                             ▼                             ▼
+  ┌───────────────┐          ┌───────────────────┐          ┌─────────────────┐
+  │   Telegram    │          │    WhatsApp       │          │     Linear      │
+  │   Response    │          │    Response       │          │  • Status: Done │
+  │               │          │                   │          │  • Comment      │
+  │               │          │                   │          │  • Reaction ✅  │
+  └───────────────┘          └───────────────────┘          └─────────────────┘
 ```
 
 ### Flow Summary
 
 1. **Receive** — User sends command via Telegram/WhatsApp/API/Linear/Nightwatch
 2. **Authenticate** — Validate Bearer token (except webhooks in skip list)
-3. **Queue** — Dispatch a job for async processing (instant confirmation response)
-4. **Analyze** — AI identifies the target project and user intent
-5. **Select CLI** — Choose OpenCode or Claude Code based on project/config
-6. **Execute** — Run an AI-powered task on the project
-7. **Record** — Store prompt and response in history
-8. **Respond** — Send a result back to the originating channel
+3. **Deduplicate** — Check 24h cache to prevent duplicate processing
+4. **Queue** — Dispatch a job for async processing (instant confirmation response)
+5. **CLI Analyze** — Run CLI tool to analyze intent, returns structured JSON
+6. **Dispatch Action** — ActionDispatcher routes to appropriate Action class
+7. **Execute** — Action performs the requested operation
+8. **Record** — Store prompt and response in history (for prompt actions)
+9. **Respond** — Send a result back to the originating channel
 
 ---
 

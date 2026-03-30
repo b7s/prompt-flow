@@ -4,7 +4,6 @@ namespace App\Jobs;
 
 use App\Enums\ChannelType;
 use App\Enums\CliType;
-use App\Services\AiContextService;
 use App\Services\ProjectActionService;
 use App\Services\ResponseService;
 use Illuminate\Bus\Queueable;
@@ -29,7 +28,7 @@ class ProcessNightwatchWebhookJob implements ShouldQueue
     ) {}
 
     public function handle(
-        AiContextService $aiContextService,
+        CliAnalysisService $cliAnalysisService,
         ProjectActionService $projectActionService,
         ResponseService $responseService,
     ): void {
@@ -39,7 +38,7 @@ class ProcessNightwatchWebhookJob implements ShouldQueue
         $shouldDispatchToCli = $this->shouldDispatchToCli();
 
         if ($shouldDispatchToCli) {
-            $this->processWithCli($aiContextService, $projectActionService, $responseService, $telegramChatId, $telegramEnabled);
+            $this->processWithCli($cliAnalysisService, $projectActionService, $responseService, $telegramChatId, $telegramEnabled);
         } else {
             $this->processWithoutCli($responseService, $telegramChatId, $telegramEnabled);
         }
@@ -55,7 +54,7 @@ class ProcessNightwatchWebhookJob implements ShouldQueue
     }
 
     private function processWithCli(
-        AiContextService $aiContextService,
+        CliAnalysisService $cliAnalysisService,
         ProjectActionService $projectActionService,
         ResponseService $responseService,
         ?string $telegramChatId,
@@ -69,20 +68,33 @@ class ProcessNightwatchWebhookJob implements ShouldQueue
         $aiMessage = $this->buildAiMessage();
 
         try {
-            $aiResult = $aiContextService->analyze($aiMessage, ChannelType::Web, null);
+            $cliResult = $cliAnalysisService->analyze($aiMessage, ChannelType::Web, null);
 
-            if ($aiResult['action'] === 'ai_response') {
+            if ($cliResult['action'] === 'cli_response') {
+                $result = $cliResult['result'] ?? [];
+                $message = $this->formatResponse($result);
                 $this->completeWithFailure(
                     $responseService,
                     $telegramChatId,
                     $telegramEnabled,
-                    $aiResult['message']
+                    $message
                 );
 
                 return;
             }
 
-            $result = $projectActionService->execute($aiResult, CliType::default());
+            if (isset($cliResult['error'])) {
+                $this->completeWithFailure(
+                    $responseService,
+                    $telegramChatId,
+                    $telegramEnabled,
+                    $cliResult['error']
+                );
+
+                return;
+            }
+
+            $result = $projectActionService->execute($cliResult, CliType::default());
 
             if ($result['success']) {
                 $this->completeWithSuccess($responseService, $telegramChatId, $telegramEnabled, $result['message']);
@@ -149,6 +161,23 @@ class ProcessNightwatchWebhookJob implements ShouldQueue
         }
 
         return $message;
+    }
+
+    private function formatResponse(array $result): string
+    {
+        if (! empty($result['user_message'])) {
+            return $result['user_message'];
+        }
+
+        if (! empty($result['message'])) {
+            return $result['message'];
+        }
+
+        if (isset($result['success']) && $result['success'] === false) {
+            return $result['error'] ?? 'An error occurred';
+        }
+
+        return json_encode($result, JSON_PRETTY_PRINT);
     }
 
     private function completeWithSuccess(
