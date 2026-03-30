@@ -47,7 +47,7 @@ readonly class CliAnalysisService
 
             $cliResponse = is_array($cliResult['output'])
                 ? $cliResult['output']
-                : json_decode($cliResult['output'], true, 512, JSON_THROW_ON_ERROR);
+                : json_decode($cliResult['output'], true);
 
             if (json_last_error() !== JSON_ERROR_NONE) {
                 Log::warning('CLI response not valid JSON', [
@@ -197,7 +197,9 @@ Choose from these actions:
 Project Matching Rules:
 - "score voice" → ScoreVoice
 - "fluent" → FluentVox
+- "test" or "test project" → teste novo
 - Fuzzy match: remove spaces and lowercase for matching
+- Also match by partial path (e.g., "xxx/test" → the project at /home/username/Documents/projects/xxx/test)
 
 Session Handling Rules:
 - If there is a previous session and the new request is RELATED to that topic, include "session_id" in params to continue the conversation

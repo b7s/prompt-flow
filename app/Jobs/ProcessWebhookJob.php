@@ -186,7 +186,7 @@ class ProcessWebhookJob implements ShouldBeUnique, ShouldQueue
             }
             $message = implode("\n", $lines);
         } else {
-            $message = json_encode($result, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT);
+            $message = json_encode($result, JSON_PRETTY_PRINT);
         }
 
         return $this->truncateMessage($message);
@@ -212,12 +212,12 @@ class ProcessWebhookJob implements ShouldBeUnique, ShouldQueue
             } elseif (isset($item['text'])) {
                 $texts[] = $item['text'];
             } elseif (isset($item['content'])) {
-                $texts[] = is_string($item['content']) ? $item['content'] : json_encode($item['content'], JSON_THROW_ON_ERROR);
+                $texts[] = is_string($item['content']) ? $item['content'] : json_encode($item['content']);
             }
         }
 
         if (empty($texts)) {
-            return json_encode($output, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT);
+            return json_encode($output, JSON_PRETTY_PRINT);
         }
 
         $fullText = implode("\n", $texts);

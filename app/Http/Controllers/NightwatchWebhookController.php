@@ -29,7 +29,7 @@ class NightwatchWebhookController
             return response()->json(['error' => 'Invalid signature'], 401);
         }
 
-        $payload = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
+        $payload = json_decode($request->getContent(), true);
 
         if (json_last_error() !== JSON_ERROR_NONE) {
             return response()->json(['error' => 'Invalid JSON payload'], 400);

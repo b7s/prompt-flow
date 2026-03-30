@@ -51,7 +51,7 @@ readonly class AiProjectManager
             ->create([
                 'project_id' => $project->id,
                 'user_prompt' => $prompt,
-                'ai_response' => json_encode($result, JSON_THROW_ON_ERROR),
+                'ai_response' => json_encode($result),
                 'cli_type' => $cliType->value,
                 'session_id' => $storedSessionId,
                 'is_continued' => $continuedFromId !== null,

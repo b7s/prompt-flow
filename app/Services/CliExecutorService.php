@@ -99,7 +99,7 @@ class CliExecutorService
             $result = $process->run($command);
 
             if ($result->successful()) {
-                $sessions = json_decode($result->output(), true, 512, JSON_THROW_ON_ERROR);
+                $sessions = json_decode($result->output(), true);
 
                 return [
                     'success' => true,
@@ -209,23 +209,36 @@ class CliExecutorService
             ];
         }
 
-        $jsonOutput = $this->extractJson($output);
+        try {
+            $jsonOutput = $this->extractJson($output);
 
-        if ($jsonOutput !== null && isset($jsonOutput['action'])) {
+            if ($jsonOutput !== null && isset($jsonOutput['action'])) {
+                return [
+                    'success' => true,
+                    'output' => $jsonOutput,
+                    'raw' => $output,
+                ];
+            }
+
+            $extractedOutput = $this->extractCommandOutput($output);
+
             return [
                 'success' => true,
-                'output' => $jsonOutput,
+                'output' => $extractedOutput,
                 'raw' => $output,
             ];
+        } catch (JsonException $e) {
+            Log::warning('CLI output parsing failed', [
+                'error' => $e->getMessage(),
+                'output_length' => strlen($output),
+                'output_preview' => substr($output, 0, 500),
+            ]);
+
+            return [
+                'success' => false,
+                'error' => 'Failed to parse CLI output: '.$e->getMessage(),
+            ];
         }
-
-        $extractedOutput = $this->extractCommandOutput($output);
-
-        return [
-            'success' => true,
-            'output' => $extractedOutput,
-            'raw' => $output,
-        ];
     }
 
     /**
@@ -237,6 +250,8 @@ class CliExecutorService
 
         $texts = [];
         $toolResults = [];
+        $parsedCount = 0;
+        $skippedCount = 0;
 
         foreach ($lines as $line) {
             $line = trim($line);
@@ -244,10 +259,14 @@ class CliExecutorService
                 continue;
             }
 
-            $json = json_decode($line, true, 512, JSON_THROW_ON_ERROR);
+            $json = json_decode($line, true);
             if (json_last_error() !== JSON_ERROR_NONE) {
+                $skippedCount++;
+
                 continue;
             }
+
+            $parsedCount++;
 
             if (isset($json['type'], $json['part']['text']) && $json['type'] === 'text') {
                 $texts[] = $json['part']['text'];
@@ -256,14 +275,24 @@ class CliExecutorService
             } elseif (isset($json['type']) && $json['type'] === 'tool_result') {
                 $content = $json['content'] ?? $json['part']['content'] ?? '';
                 if ($content) {
-                    $toolResults[] = is_string($content) ? $content : json_encode($content, JSON_THROW_ON_ERROR);
+                    $toolResults[] = is_string($content) ? $content : json_encode($content);
                 }
             } elseif (isset($json['type'], $json['part']['text']) && $json['type'] === 'message_output') {
                 $texts[] = $json['part']['text'];
             } elseif (isset($json['part']['error_output']) && $json['part']['error_output']) {
                 $texts[] = 'Tool error: '.$json['part']['error_output'];
+            } elseif (isset($json['text'])) {
+                $texts[] = $json['text'];
             }
         }
+
+        Log::debug('CLI extractCommandOutput: Parsed lines', [
+            'total_lines' => count($lines),
+            'parsed_count' => $parsedCount,
+            'skipped_count' => $skippedCount,
+            'texts_count' => count($texts),
+            'tool_results_count' => count($toolResults),
+        ]);
 
         if (! empty($toolResults)) {
             return $this->formatOutput(end($toolResults));
@@ -308,7 +337,7 @@ class CliExecutorService
                 continue;
             }
 
-            $json = json_decode($line, true, 512, JSON_THROW_ON_ERROR);
+            $json = json_decode($line, true);
             if (json_last_error() !== JSON_ERROR_NONE) {
                 continue;
             }
@@ -320,14 +349,14 @@ class CliExecutorService
             if (isset($json['type'], $json['part']['text']) && $json['type'] === 'text') {
                 $innerText = $json['part']['text'];
                 $innerText = $this->stripMarkdown($innerText);
-                $innerJson = json_decode($innerText, true, 512, JSON_THROW_ON_ERROR);
+                $innerJson = json_decode($innerText, true);
                 if (is_array($innerJson) && isset($innerJson['action']) && json_last_error() === JSON_ERROR_NONE) {
                     return $innerJson;
                 }
             }
         }
 
-        $fullJson = json_decode($output, true, 512, JSON_THROW_ON_ERROR);
+        $fullJson = json_decode($output, true);
         if (is_array($fullJson) && isset($fullJson['action']) && json_last_error() === JSON_ERROR_NONE) {
             return $fullJson;
         }
@@ -339,6 +368,7 @@ class CliExecutorService
     {
         $text = preg_replace('/^```json\s*/', '', $text);
         $text = preg_replace('/^```\s*/', '', $text);
+
         return preg_replace('/\s*```$/', '', $text);
     }
 }

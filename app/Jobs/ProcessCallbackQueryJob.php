@@ -29,7 +29,7 @@ class ProcessCallbackQueryJob implements ShouldQueue
     public function handle(): void
     {
         try {
-            $data = json_decode($this->callbackData, true, 512, JSON_THROW_ON_ERROR);
+            $data = json_decode($this->callbackData, true);
         } catch (JsonException $e) {
             Log::error('Invalid callback data', ['data' => $this->callbackData]);
 
