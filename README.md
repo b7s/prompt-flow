@@ -355,19 +355,6 @@ The system automatically continues in the same CLI session when possible, mainta
 > **Note:** `APP_EXTERNAL_URL` is required for Telegram, Linear, etc., webhooks to work.
 > Can be the same as `APP_URL` if you're running on the same server.
 
-### AI Providers (for CLI Tool Execution)
-
-The AI is used by the CLI tool (OpenCode/Claude Code) for executing tasks, not for decision making. The AI provider configuration is passed to the CLI tool:
-
-| Provider | Environment Variable | Model |
-|----------|---------------------|-------|
-| Anthropic | `AI_FLOW_PROVIDER=anthropic` | `claude-sonnet-4-6` |
-| OpenAI | `AI_FLOW_PROVIDER=openai` | `gpt-5` |
-| Ollama | `AI_FLOW_PROVIDER=ollama` | `llama3` |
-| Gemini | `AI_FLOW_PROVIDER=gemini` | `gemini-3` |
-
-The system uses CLI-based intent analysis - the CLI tool analyzes user input and returns structured JSON that routes to the appropriate Action class.
-
 ---
 
 ## Testing

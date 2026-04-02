@@ -7,6 +7,7 @@ use App\Jobs\ProcessCallbackQueryJob;
 use App\Jobs\ProcessWebhookJob;
 use App\Services\CliProcessTracker;
 use App\Services\ResponseService;
+use Exception;
 use Illuminate\Http\JsonResponse;
 use Telegram\Bot\Laravel\Facades\Telegram;
 
@@ -44,7 +45,7 @@ class TelegramWebhookController
                 Telegram::answerCallbackQuery([
                     'callback_query_id' => $callbackQuery->getId(),
                 ]);
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
             }
 
             return response()->json([
